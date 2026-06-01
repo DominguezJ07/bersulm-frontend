@@ -1,0 +1,30 @@
+<svg width="256" height="256" viewBox="0 0 256 256" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="woodGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#8d5a34" />
+      <stop offset="50%" stop-color="#b07d54" />
+      <stop offset="100%" stop-color="#7a4b28" />
+    </linearGradient>
+    <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#f5a623" />
+      <stop offset="100%" stop-color="#c17f1d" />
+    </linearGradient>
+    <style>
+      .ring { fill: none; stroke: url(#woodGrad); stroke-width: 16; }
+      .inner { fill: url(#woodGrad); opacity: 0.95; }
+      .mark { fill: url(#goldGrad); }
+      .topText { font-family: 'Montserrat', 'Arial', sans-serif; font-size: 16px; font-weight: 700; letter-spacing: 4px; fill: url(#goldGrad); }
+      .tagline { font-family: 'Montserrat', 'Arial', sans-serif; font-size: 8px; fill: url(#goldGrad); letter-spacing: 1px; }
+    </style>
+    <path id="topArc" d="M52,128 A76,76 0 0,1 204,128" />
+    <path id="bottomArc" d="M204,148 A76,76 0 0,1 52,148" />
+  </defs>
+  <rect width="256" height="256" fill="transparent" />
+  <circle cx="128" cy="128" r="108" class="ring" />
+  <circle cx="128" cy="128" r="92" class="inner" />
+  <path class="mark" d="M128 70 C142 98 126 110 126 138 C126 160 136 168 136 178 C136 196 112 196 112 164 C112 140 128 130 128 114 C128 98 114 84 128 70 Z" />
+  <text text-anchor="middle" class="topText">
+    <textPath href="#topArc" startOffset="50%">BERSULM</textPath>
+  </text>
+  <text x="128" y="198" text-anchor="middle" class="tagline">Lo sublime va en el corazón</text>
+</svg>

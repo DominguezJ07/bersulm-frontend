@@ -5,6 +5,7 @@ export const ROUTES = {
   RESERVAS: '/reservas',
   REWARDS: '/premios',
   LOYALTY: '/fidelidad',
+  LOYALTY_MINIGAME: '/fidelidad/minijuego',
   SETTINGS: '/ajustes',
   LOGIN: '/login',
   REGISTER: '/register',

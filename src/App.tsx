@@ -11,6 +11,7 @@ const Services = lazy(() => import('./pages/Services'))
 const Appointments = lazy(() => import('./pages/Appointments'))
 const Rewards = lazy(() => import('./pages/Rewards'))
 const Loyalty = lazy(() => import('./pages/Loyalty'))
+const LoyaltyMinigame = lazy(() => import('./pages/Loyalty/Minigame'))
 const Settings = lazy(() => import('./pages/Settings'))
 const Login = lazy(() => import('./pages/Auth/Login'))
 const Register = lazy(() => import('./pages/Auth/Register'))
@@ -72,6 +73,23 @@ function App() {
                     element={
                       <PrivateRoute>
                         <Loyalty />
+                      </PrivateRoute>
+                    }
+                  />
+
+                  <Route
+                    path="/fidelidad/minijuego"
+                    element={
+                      <PrivateRoute>
+                        <LoyaltyMinigame />
+                      </PrivateRoute>
+                    }
+                  />
+                  <Route
+                    path="/loyalty/minigame"
+                    element={
+                      <PrivateRoute>
+                        <LoyaltyMinigame />
                       </PrivateRoute>
                     }
                   />

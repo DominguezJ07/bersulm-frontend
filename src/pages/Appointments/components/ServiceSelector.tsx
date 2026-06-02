@@ -97,7 +97,7 @@ export function ServiceSelector({
                 className={`absolute top-3 right-3 flex h-6 w-6 items-center justify-center rounded-full border transition-all duration-300 ${
                   selected
                     ? 'border-transparent bg-gold'
-                    : 'border-white/30 bg-[rgba(255,255,255,0.06)] shadow-[0_0_0_1px_rgba(255,255,255,0.12)]'
+                    : 'border-[var(--border-color)] bg-[var(--bg-tertiary)]'
                 }`}
               >
                 {selected ? <Check size={14} className="text-surface-dark" strokeWidth={3} /> : null}
@@ -113,7 +113,7 @@ export function ServiceSelector({
                   {getDisplayDesc(service)}
                 </p>
               )}
-              <div className="mt-3 flex items-center gap-2 text-sm leading-6 text-[#bfbfbf]">
+              <div className="mt-3 flex items-center gap-2 text-sm leading-6 text-[var(--text-secondary)]">
                 <Clock size={16} />
                 <span>Duración {formatDuration(service)}</span>
               </div>

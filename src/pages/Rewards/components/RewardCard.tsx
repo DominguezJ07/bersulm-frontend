@@ -40,7 +40,7 @@ export function RewardCard({
         )}
       </div>
       <div className="mt-6">
-        <div className="h-1.5 overflow-hidden rounded-full bg-white/10">
+        <div className="h-1.5 overflow-hidden rounded-full bg-[var(--bg-tertiary)]">
           <div
             className="h-full rounded-full bg-gradient-to-r from-gold via-[#d4891a] to-[#b8740f]"
             style={{ width: `${pct}%` }}
@@ -57,7 +57,7 @@ export function RewardCard({
             className={`w-full rounded-lg border px-4 py-3 text-center text-sm ${
               votedRewardId === rewardId
                 ? 'border-green-500/30 bg-green-600/20 text-green-400'
-                : 'border-gray-600/30 bg-gray-700/30 text-gray-400'
+                : 'border-[var(--border-color)] bg-[var(--bg-tertiary)] text-[var(--text-muted)]'
             }`}
           >
             {votedRewardId === rewardId ? (
@@ -72,7 +72,7 @@ export function RewardCard({
           <button
             onClick={() => rewardId && onVote(rewardId)}
             disabled={!rewardId}
-            className="w-full cursor-pointer rounded-lg bg-[#f5a623] px-4 py-2 text-sm font-semibold text-black transition-all duration-300 hover:bg-[#e4991a]"
+            className="w-full cursor-pointer rounded-lg bg-gold px-4 py-2 text-sm font-semibold text-surface-dark transition-all duration-300 hover:brightness-110"
           >
             Votar
           </button>

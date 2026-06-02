@@ -62,7 +62,7 @@ function ScratchCard({
   return (
     <button
       onClick={handleReveal}
-      className="group relative flex h-32 cursor-pointer items-center justify-center overflow-hidden rounded-lg border-2 border-gold bg-[var(--bg-card)] text-lg font-bold text-gold transition-all hover:shadow-lg hover:shadow-gold/30"
+      className="group relative flex h-24 w-full cursor-pointer items-center justify-center overflow-hidden rounded-3xl border-2 border-gold/25 bg-[var(--bg-card)] text-base font-bold text-gold shadow-[0_8px_24px_rgba(0,0,0,0.18)] transition-all hover:border-gold hover:shadow-[0_12px_36px_rgba(245,166,35,0.18)] md:h-28"
     >
       <svg className="absolute inset-0 h-full w-full" viewBox="0 0 100 100" preserveAspectRatio="none">
         <defs>
@@ -176,11 +176,10 @@ export default function Loyalty() {
     <main className="bg-[var(--bg-primary)] px-6 pb-24 pt-8 text-[var(--text-primary)] sm:px-8 lg:px-10">
       <style>{`
         @keyframes flip { 0% { transform: rotateY(0deg); } 100% { transform: rotateY(180deg); } }
-        @keyframes flipReverse { 0% { transform: rotateY(180deg); } 100% { transform: rotateY(0deg); } }
-        .card-3d { perspective: 1000px; cursor: pointer; }
+        .card-3d { perspective: 1000px; cursor: pointer; width: 100%; margin: 0 auto; }
         .card-inner { position: relative; width: 100%; height: 100%; transition: transform 0.6s; transform-style: preserve-3d; }
         .card-inner.flipped { transform: rotateY(180deg); }
-        .card-face { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; display: flex; flex-direction: column; }
+        .card-face { position: absolute; inset: 0; width: 100%; height: 100%; backface-visibility: hidden; display: flex; flex-direction: column; }
         .card-back { transform: rotateY(180deg); }
       `}</style>
 
@@ -191,60 +190,77 @@ export default function Loyalty() {
         </h1>
       </header>
 
-      <div className="my-8 flex items-center justify-center">
-        <div className="w-[90%] max-w-full sm:w-96">
+      <div className="my-8 flex justify-center">
+        <div className="w-[92%] max-w-[420px]">
           <div className="relative" style={{ perspective: '1000px' }}>
-            <div className="card-3d h-48 md:h-56" onClick={() => setIsFlipped(!isFlipped)}>
+            <div className="card-3d h-[240px] md:h-[260px]" onClick={() => setIsFlipped(!isFlipped)}>
               <div className={`card-inner ${isFlipped ? 'flipped' : ''}`}>
                 <div className="card-face">
-                  <Card className="flex h-full flex-col justify-between bg-gradient-to-br from-[var(--bg-card)] to-[var(--bg-primary)] border-2 border-gold/20 p-6 shadow-2xl shadow-gold/10 md:p-8">
-                    <div>
-                      <div className="mb-4 flex items-start justify-between">
-                        <div className="text-xl font-bold text-gold md:text-2xl">BERSULM</div>
-                        <Award size={28} className="text-gold" />
+                  <Card className="flex h-full flex-col justify-between rounded-[24px] border border-gold/25 bg-[var(--bg-primary)] p-4 shadow-[0_14px_30px_rgba(0,0,0,0.22)] ring-1 ring-gold/15 md:p-5">
+                    <div className="flex items-center justify-between gap-3">
+                      <div>
+                        <h2 className="text-2xl font-bold uppercase tracking-[0.25em] text-gold sm:text-[26px]">
+                          BERSULM
+                        </h2>
+                        <p className="mt-2 text-[10px] uppercase tracking-[0.35em] text-gold/70">
+                          TARJETA PREMIUM
+                        </p>
                       </div>
-                      <p className="text-xs uppercase tracking-widest text-gold/70">Tarjeta Premium</p>
+                      <div className="text-gold/90">
+                        <Award size={20} />
+                      </div>
                     </div>
-                    <div className="py-2 text-center md:py-4">
-                      <p className="text-lg font-bold text-[var(--text-primary)] md:text-xl">{displayName}</p>
+
+                    <div className="flex flex-col items-center justify-center text-center">
+                      <p className="text-base font-bold uppercase tracking-[0.15em] text-[var(--text-primary)]">
+                        {displayName}
+                      </p>
                     </div>
-                    <div>
-                      <p className="mb-2 text-center text-xs tracking-wider text-[var(--text-secondary)] md:text-sm">**** **** **** 2026</p>
-                      <div className="flex items-end justify-between">
-                        <p className="text-xs font-bold text-gold">BERSULM VIP</p>
-                        <p className="text-xs text-[var(--text-secondary)]">Toca para girar</p>
+
+                    <div className="space-y-2 text-center text-[var(--text-secondary)]">
+                      <p className="text-[11px] tracking-[0.2em] text-[var(--text-muted)]">**** **** **** 2026</p>
+                      <div className="flex items-center justify-between text-[9px] uppercase tracking-[0.25em] text-gold/80">
+                        <span className="font-semibold text-gold">BERSULM VIP</span>
+                        <span className="text-[var(--text-muted)]">Toca para girar</span>
                       </div>
                     </div>
                   </Card>
                 </div>
 
                 <div className="card-face card-back">
-                  <Card className="flex h-full flex-col justify-between bg-gradient-to-br from-[var(--bg-card)] to-[var(--bg-primary)] border-2 border-gold/20 p-6 shadow-2xl shadow-gold/10 md:p-8">
-                    <div>
-                      <h3 className="mb-2 text-base font-bold text-[var(--text-primary)] md:text-lg">Progreso de Visitas</h3>
-                      <p className="text-xs text-gold md:text-sm">{visitsCompleted} de 5 visitas completadas</p>
+                  <Card className="flex h-full flex-col justify-between rounded-[28px] border border-gold/25 bg-[var(--bg-primary)] p-5 shadow-[0_20px_45px_rgba(0,0,0,0.28)] ring-1 ring-gold/15 md:p-6">
+                    <div className="space-y-2">
+                      <p className="text-[10px] uppercase tracking-[0.35em] text-[var(--text-muted)]">Tarjeta de fidelidad</p>
+                      <h3 className="text-lg font-bold uppercase tracking-[0.2em] text-[var(--text-primary)]">Progreso</h3>
+                      <p className="text-xs text-gold/90">{visitsCompleted} de 5 visitas completadas</p>
                     </div>
-                    <div className="flex justify-center gap-2">
-                      {Array.from({ length: 5 }).map((_, i) => (
-                        <div
-                          key={i}
-                          className={`flex h-6 w-6 items-center justify-center rounded-lg text-xs font-bold transition-all md:h-8 md:w-8 ${
-                            i < visitsCompleted
-                              ? 'bg-gold text-surface-dark'
-                              : 'border-2 border-gold text-gold'
-                          }`}
-                        >
-                          {i < visitsCompleted ? '\u2713' : ''}
-                        </div>
-                      ))}
+
+                    <div className="grid gap-2 pb-2 md:gap-3">
+                      <div className="grid grid-cols-5 gap-2">
+                        {Array.from({ length: 5 }).map((_, i) => {
+                          const isStamped = i < Math.min(visitsCompleted, 5)
+                          return (
+                            <div
+                              key={i}
+                              className={`aspect-square rounded-3xl border border-[var(--border-color)] p-2 text-center transition ${
+                                isStamped
+                                  ? 'bg-gold text-surface-dark shadow-[inset_0_0_0_2px_rgba(0,0,0,0.08)]'
+                                  : 'bg-[var(--bg-card)] text-[var(--text-primary)]'
+                              }`}
+                            >
+                              <span className="block text-lg font-bold">{i + 1}</span>
+                              <span className="mt-1 block text-[8px] uppercase tracking-[0.25em] text-[var(--text-muted)]">
+                                BERSULM
+                              </span>
+                            </div>
+                          )
+                        })}
+                      </div>
                     </div>
-                    <div>
-                      <p className="mb-1 text-center text-xs text-[var(--text-secondary)]">
-                        Completa 5 visitas para una recompensa
-                      </p>
-                      <p className="text-center text-xs text-gold/70">
-                        Toca la tarjeta para voltearla
-                      </p>
+
+                    <div className="space-y-1 text-center text-xs text-[var(--text-secondary)]">
+                      <p>Completa 5 visitas para una recompensa.</p>
+                      <p>Toca la tarjeta para girarla.</p>
                     </div>
                   </Card>
                 </div>
@@ -309,12 +325,12 @@ export default function Loyalty() {
             </div>
           </div>
 
-          <div className="mb-8 grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
-            {Array.from({ length: 10 }).map((_, i) => (
+          <div className="mb-8 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+            {Array.from({ length: 15 }).map((_, i) => (
               <ScratchCard
                 key={i}
                 isWinner={i === winnerIndex}
-                rewardText={possibleRewards[i] || 'Sorpresa'}
+                rewardText={possibleRewards[i % possibleRewards.length] || 'Sorpresa'}
                 revealed={scratchesRevealed[i] || false}
                 onReveal={() =>
                   setScratchesRevealed({ ...scratchesRevealed, [i]: true })
@@ -330,7 +346,7 @@ export default function Loyalty() {
                 <p className="mb-4 text-xl font-bold text-surface-dark">{winnerReward}</p>
                 <button
                   onClick={handleClaimReward}
-                  className="rounded-lg bg-surface-dark px-6 py-2 font-bold text-gold transition-all hover:brightness-150"
+                  className="rounded-lg bg-[var(--bg-card)] px-6 py-2 font-bold text-gold transition-all hover:brightness-150"
                 >
                   Reclamar Premio
                 </button>

@@ -24,12 +24,12 @@ export function Footer() {
   const navigate = useNavigate()
 
   return (
-    <footer className="bg-[#0f0a04] text-white">
+    <footer className="bg-[var(--bg-primary)] text-[var(--text-primary)]">
       <div className="mx-auto max-w-[1580px] px-[var(--page-px)] py-10 sm:px-6 lg:px-8">
         <div className="grid gap-y-8 gap-x-0 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
           <div className="space-y-4">
             <div className="flex items-center gap-3 text-[14px] uppercase tracking-[0.35em] text-gold">
-              <div className="relative flex h-10 w-10 items-center justify-center rounded-full border border-gold bg-[#0f0a04] overflow-hidden">
+              <div className="relative flex h-10 w-10 items-center justify-center rounded-full border border-gold bg-[var(--bg-primary)] overflow-hidden">
                 <img src={logoBersulm} alt="BERSULM" className="h-full w-full object-cover" />
               </div>
               <span className="font-medium">BERSULM</span>

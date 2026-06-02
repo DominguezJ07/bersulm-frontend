@@ -59,7 +59,7 @@ export function TimeSlotPicker({
                     ? 'cursor-not-allowed border-red-600 bg-[#3a1f1a] text-red-400 line-through'
                     : selected
                       ? 'border-gold bg-gold text-surface-dark'
-                      : 'border-[#3b2b1e] bg-surface text-white hover:border-gold hover:bg-[#2f2311]'
+                      : 'border-[var(--border-color)] bg-[var(--bg-card)] text-[var(--text-primary)] hover:border-gold hover:bg-[var(--bg-tertiary)]'
                 }`}
               >
                 <div className="flex items-center justify-between">

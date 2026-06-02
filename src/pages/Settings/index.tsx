@@ -211,7 +211,7 @@ export default function Settings() {
                   type="button"
                   onClick={handleThemeToggle}
                   className={`relative inline-flex h-11 w-20 shrink-0 items-center rounded-full transition ${
-                    themeMode === 'light' ? 'bg-gold' : 'bg-[#555]'
+                    themeMode === 'light' ? 'bg-gold' : 'bg-[var(--bg-tertiary)]'
                   }`}
                 >
                   <span
@@ -243,7 +243,7 @@ export default function Settings() {
                   type="button"
                   onClick={() => handleNotificationToggle('appointmentReminder')}
                   className={`relative inline-flex h-11 w-20 shrink-0 items-center rounded-full transition ${
-                    notifications.appointmentReminder ? 'bg-gold' : 'bg-[#555]'
+                    notifications.appointmentReminder ? 'bg-gold' : 'bg-[var(--bg-tertiary)]'
                   }`}
                 >
                   <span
@@ -265,7 +265,7 @@ export default function Settings() {
                   type="button"
                   onClick={() => handleNotificationToggle('promotions')}
                   className={`relative inline-flex h-11 w-20 shrink-0 items-center rounded-full transition ${
-                    notifications.promotions ? 'bg-gold' : 'bg-[#555]'
+                    notifications.promotions ? 'bg-gold' : 'bg-[var(--bg-tertiary)]'
                   }`}
                 >
                   <span
@@ -303,7 +303,7 @@ export default function Settings() {
                   appointment.status || appointment.state || 'pending',
                 ).toLowerCase()
                 const badgeClass =
-                  statusBadgeClasses[status] || 'bg-[#777]/15 text-[#cccccc]'
+                  statusBadgeClasses[status] || 'bg-[var(--bg-tertiary)] text-[var(--text-secondary)]'
                 const key = appointment.id || appointment._id || index
                 return (
                   <div

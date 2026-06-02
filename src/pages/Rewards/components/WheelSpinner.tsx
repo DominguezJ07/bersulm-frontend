@@ -102,7 +102,7 @@ export function WheelSpinner({
                     <path
                       d={describeArc(index)}
                       fill={wheelColors[index % wheelColors.length]}
-                      stroke="#1a1208"
+                      stroke="var(--text-primary)"
                       strokeWidth="2"
                     />
                     {isRewardsMode && pct !== undefined ? (
@@ -120,7 +120,7 @@ export function WheelSpinner({
                           })()}
                           textAnchor="middle"
                           dominantBaseline="central"
-                          fill="#1a1208"
+                          fill="var(--text-primary)"
                           fontSize="12"
                           fontWeight="700"
                         >
@@ -139,7 +139,7 @@ export function WheelSpinner({
                           })()}
                           textAnchor="middle"
                           dominantBaseline="central"
-                          fill="#1a1208"
+                          fill="var(--text-primary)"
                           fontSize="16"
                           fontWeight="900"
                         >
@@ -151,8 +151,8 @@ export function WheelSpinner({
                         x={200}
                         y={62 + (index * 45 > 180 ? 0 : 0)}
                         textAnchor="middle"
-                        fill="#1a1208"
-                        fontSize={segmentCount <= 6 ? 18 : 14}
+                      fill="var(--text-primary)"
+                      fontSize={segmentCount <= 6 ? 18 : 14}
                         fontWeight="700"
                         transform={`rotate(${(index + 0.5) * angle} 200 200)`}
                       >
@@ -202,7 +202,7 @@ export function WheelSpinner({
         )}
 
         {isRewardsMode && raffleStatus === 'voting' && (
-          <div className="w-full rounded-full bg-gray-700/40 px-6 py-3 text-sm text-[var(--text-secondary)]">
+          <div className="w-full rounded-full bg-[var(--bg-tertiary)] px-6 py-3 text-sm text-[var(--text-secondary)]">
             Votación en curso — los resultados se actualizan en vivo
           </div>
         )}
@@ -210,7 +210,7 @@ export function WheelSpinner({
         {!isRewardsMode && isAdmin && isLastDay && raffleStatus !== 'completed' ? (
           <button
             onClick={onStartDraw}
-            className="w-full rounded-full bg-[#f5a623] px-6 py-3 text-base font-bold text-black transition-all duration-300 hover:bg-[#e4991a] disabled:cursor-not-allowed disabled:opacity-70"
+            className="w-full rounded-full bg-gold px-6 py-3 text-base font-bold text-surface-dark transition-all duration-300 hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-70"
             disabled={isSpinning || isSpinLoading}
           >
             {isSpinning ? 'Girando Ruleta...' : 'Iniciar Sorteo'}
@@ -218,7 +218,7 @@ export function WheelSpinner({
         ) : !isRewardsMode && raffleStatus === 'completed' ? (
           <button
             type="button"
-            className="w-full cursor-default rounded-full bg-[#f5a623] px-6 py-3 text-base font-bold text-black"
+            className="w-full cursor-default rounded-full bg-gold px-6 py-3 text-base font-bold text-surface-dark"
             disabled
           >
             Ver Ganador
@@ -226,7 +226,7 @@ export function WheelSpinner({
         ) : !isRewardsMode ? (
           <button
             type="button"
-            className="w-full cursor-default rounded-full bg-gray-700 px-6 py-3 text-base font-bold text-[var(--text-secondary)]"
+            className="w-full cursor-default rounded-full bg-[var(--bg-tertiary)] px-6 py-3 text-base font-bold text-[var(--text-secondary)]"
             disabled
           >
             Ruleta cerrada

@@ -45,13 +45,13 @@ export default function Register() {
       <Helmet>
         <title>Crear Cuenta | BERSULM</title>
       </Helmet>
-      <main className="flex min-h-screen items-center justify-center bg-surface-dark px-6 py-10 text-white">
-        <div className="w-full max-w-md rounded-[32px] border border-[#3b2b1e] bg-[#2a1f0e] p-8 shadow-xl">
+      <main className="flex min-h-screen items-center justify-center bg-[var(--bg-primary)] px-6 py-10 text-[var(--text-primary)]">
+        <div className="w-full max-w-md rounded-[32px] border border-[var(--border-color)] bg-[var(--bg-secondary)] p-8 shadow-xl">
           <div className="flex flex-col items-center gap-4 text-center">
             <img src={logoBersulm} alt="BERSULM" className="h-20 w-20 object-contain" />
             <div>
               <h1 className="text-3xl font-semibold">Crea tu cuenta</h1>
-              <p className="mt-2 text-sm text-[#bfbfbf]">
+              <p className="mt-2 text-sm text-[var(--text-secondary)]">
                 Regístrate para comenzar a reservar tus servicios.
               </p>
             </div>
@@ -105,9 +105,9 @@ export default function Register() {
             </button>
           </form>
 
-          <p className="mt-6 text-center text-sm text-[#cccccc]">
+          <p className="mt-6 text-center text-sm text-[var(--text-secondary)]">
             ¿Ya tienes cuenta?{' '}
-            <Link to="/login" className="font-semibold text-gold hover:text-white">
+            <Link to="/login" className="font-semibold text-gold hover:text-[var(--text-primary)]">
               Inicia sesión
             </Link>
           </p>

@@ -75,7 +75,7 @@ export default function Rewards() {
         </div>
 
         {flow.rewards.length === 0 && !flow.isLoading && (
-          <p className="py-8 text-center text-gray-400">Cargando premios...</p>
+          <p className="py-8 text-center text-[var(--text-muted)]">Cargando premios...</p>
         )}
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">

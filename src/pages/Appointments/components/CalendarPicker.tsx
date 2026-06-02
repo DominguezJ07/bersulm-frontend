@@ -60,7 +60,7 @@ export function CalendarPicker({
         </div>
       </div>
 
-      <div className="mt-6 grid grid-cols-7 gap-2 text-center text-xs uppercase tracking-[0.35em] text-[#999999]">
+      <div className="mt-6 grid grid-cols-7 gap-2 text-center text-xs uppercase tracking-[0.35em] text-[var(--text-muted)]">
         {weekdays.map((day) => (
           <span key={day}>{day}</span>
         ))}
@@ -79,10 +79,10 @@ export function CalendarPicker({
               disabled={disabled}
               className={`min-h-[52px] rounded-3xl border p-2 transition duration-300 ${
                 disabled
-                  ? 'cursor-not-allowed border-transparent bg-surface-dark text-[#4a443b]'
+                  ? 'cursor-not-allowed border-transparent bg-[var(--bg-secondary)] text-[var(--text-muted)]'
                   : selected
                     ? 'border-gold bg-gold text-surface-dark'
-                    : 'border-[#3b2b1e] bg-surface text-white hover:border-gold hover:bg-[#2f2311]'
+                    : 'border-[var(--border-color)] bg-[var(--bg-card)] text-[var(--text-primary)] hover:border-gold hover:bg-[var(--bg-tertiary)]'
               }`}
             >
               {date ? date.getDate() : ''}

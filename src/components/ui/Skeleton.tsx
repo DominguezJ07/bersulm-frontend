@@ -11,7 +11,7 @@ export function Skeleton({
   width,
   height,
 }: SkeletonProps) {
-  const base = 'animate-pulse bg-gray-700/50'
+  const base = 'animate-pulse bg-[var(--bg-tertiary)]'
   const variants = {
     text: 'rounded h-4',
     circular: 'rounded-full',

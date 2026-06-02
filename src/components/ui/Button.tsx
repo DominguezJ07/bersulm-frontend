@@ -14,7 +14,7 @@ export function Button({
   const base = 'inline-flex items-center justify-center rounded-full text-sm font-semibold transition duration-300'
   const variantClasses = {
     primary: 'bg-gold text-surface-dark hover:brightness-110',
-    secondary: 'bg-surface-light text-text-primary hover:brightness-110',
+    secondary: 'bg-[var(--bg-secondary)] text-[var(--text-primary)] hover:brightness-110',
   }
 
   return (

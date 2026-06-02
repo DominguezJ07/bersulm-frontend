@@ -14,4 +14,12 @@ export default defineConfig({
     },
     tsconfigPaths: true,
   },
+  server: {
+    proxy: {
+      '/api': {
+        target: 'https://bersulm-backend.onrender.com',
+        changeOrigin: true,
+      },
+    },
+  },
 })

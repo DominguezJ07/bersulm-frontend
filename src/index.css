@@ -1,41 +1,46 @@
-*, *::before, *::after {
-  box-sizing: border-box;
+@import "tailwindcss";
+
+@theme {
+  --color-gold: #f5a623;
+  --color-surface: #24180f;
+  --color-surface-light: #2a1f0e;
+  --color-surface-dark: #1a1208;
+  --color-border: rgba(245, 166, 35, 0.2);
+  --color-text-muted: #999999;
+  --color-text-secondary: #cccccc;
 }
 
 :root {
   --bg-primary: #1a1208;
   --bg-secondary: #2a1f0e;
   --bg-card: #2a1f0e;
+  --bg-tertiary: #1f150c;
   --text-primary: #ffffff;
   --text-secondary: #cccccc;
   --text-muted: #999999;
-  --border: rgba(245, 166, 35, 0.2);
-  --gold: #f5a623;
+  --border-color: rgba(245, 166, 35, 0.2);
+  --accent: #f5a623;
 }
 
 html.light-mode {
   --bg-primary: #F5F1EC;
   --bg-secondary: #EDE8E1;
   --bg-card: #E4DDD4;
+  --bg-tertiary: #D9D0C5;
   --text-primary: #1a1208;
   --text-secondary: #4a3728;
   --text-muted: #7a6a58;
-  --border: rgba(26, 18, 8, 0.2);
+  --border-color: rgba(26, 18, 8, 0.2);
+  --accent: #f5a623;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
 }
 
 body {
   background-color: var(--bg-primary);
   color: var(--text-primary);
   transition: background-color 0.3s, color 0.3s;
+  font-family: Inter, system-ui, sans-serif;
 }
-
-/* Clases utilitarias para usar en componentes */
-.bg-app { background-color: var(--bg-primary) !important; }
-.bg-card { background-color: var(--bg-card) !important; }
-.bg-section { background-color: var(--bg-secondary) !important; }
-.text-app { color: var(--text-primary) !important; }
-.text-app-secondary { color: var(--text-secondary) !important; }
-.text-app-muted { color: var(--text-muted) !important; }
-.border-app { border-color: var(--border) !important; }
-
-@import "tailwindcss";

@@ -4,11 +4,11 @@ import { Footer } from './Footer'
 
 export function Layout() {
   return (
-    <div className="min-h-screen flex flex-col gap-0 bg-[var(--bg-primary)] text-[var(--text-primary)]">
+    <div className="flex min-h-screen flex-col overflow-x-clip bg-[var(--bg-primary)] text-[var(--text-primary)]">
       <div className="md:order-[-1]">
         <BottomNav />
       </div>
-      <main className="flex-1">
+      <main className="flex-1" id="main-content">
         <Outlet />
       </main>
       <Footer />

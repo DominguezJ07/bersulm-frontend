@@ -76,7 +76,7 @@ export function ServiceSelector({
 
   return (
     <section className="space-y-8">
-      <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
+      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3">
         {services.map((service) => {
           const selected =
             Boolean(selectedService) &&

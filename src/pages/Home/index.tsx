@@ -70,7 +70,7 @@ export default function Home() {
       </section>
 
       <section className="border-y border-gold bg-[var(--bg-secondary)] py-20">
-        <div className="mx-auto grid max-w-6xl gap-8 px-6 sm:grid-cols-3">
+        <div className="mx-auto grid max-w-6xl grid-cols-1 gap-8 px-[var(--page-px)] sm:grid-cols-3">
           {stats.map((item) => (
             <div key={item.label} className="space-y-3 rounded-[32px] bg-[var(--bg-tertiary)] p-8 text-center shadow-xl shadow-black/10">
               <p className="text-5xl font-bold text-gold">{item.value}</p>
@@ -92,7 +92,7 @@ export default function Home() {
             </p>
           </div>
 
-          <div className="grid gap-6 md:grid-cols-3">
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3">
             {features.map(({ icon: Icon, title, desc }) => (
               <div key={title} className="rounded-[32px] border border-[var(--border-color)] bg-[var(--bg-secondary)] p-8 shadow-xl shadow-black/5 transition hover:-translate-y-1">
                 <div className="mb-6 inline-flex h-14 w-14 items-center justify-center rounded-3xl bg-[var(--bg-tertiary)] text-gold">
@@ -125,7 +125,7 @@ export default function Home() {
             ))}
           </div>
 
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {galleryImages
               .filter((image) => galleryFilter === 'todos' || image.category === galleryFilter)
               .map((image) => (

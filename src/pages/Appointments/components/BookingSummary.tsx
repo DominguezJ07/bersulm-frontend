@@ -40,7 +40,7 @@ export function BookingSummary({
           </div>
         </div>
 
-        <div className="mt-8 grid gap-6 sm:grid-cols-3">
+        <div className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-3">
           <div className="rounded-[28px] border border-[#33271e] bg-[#24180f] p-6">
             <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#1f150c] text-gold">
               <Scissors size={22} />

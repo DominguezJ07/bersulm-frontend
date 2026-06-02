@@ -191,7 +191,7 @@ export default function Settings() {
           </div>
         </Card>
 
-        <div className="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
+        <div className="grid grid-cols-1 gap-6 xl:grid-cols-[1.2fr_0.8fr]">
           <Card className="p-8">
             <p className="text-sm uppercase tracking-[0.35em] text-gold">Apariencia</p>
             <h2 className="mt-3 text-2xl font-semibold">Tema de la aplicación</h2>
@@ -326,7 +326,7 @@ export default function Settings() {
                         {status}
                       </span>
                     </div>
-                    <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                    <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
                       <div className="rounded-3xl bg-[var(--bg-card)] p-4">
                         <p className="text-xs uppercase tracking-[0.35em] text-gold">Fecha</p>
                         <p className="mt-2 text-sm text-[var(--text-secondary)]">

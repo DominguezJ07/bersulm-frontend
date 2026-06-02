@@ -66,7 +66,7 @@ export function CalendarPicker({
         ))}
       </div>
 
-      <div className="mt-3 grid grid-cols-7 gap-2">
+      <div className="mt-3 grid grid-cols-7 gap-1 sm:gap-2">
         {calendarDays.map((date, index) => {
           const disabled = !date || isPastDay(date)
           const selected = Boolean(date && isSelected(date))

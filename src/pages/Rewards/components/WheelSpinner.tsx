@@ -81,7 +81,7 @@ export function WheelSpinner({
           </div>
         </div>
 
-        <div className="relative h-[360px] w-[360px] rounded-full border border-gold/20 bg-[var(--bg-card)] p-4 shadow-2xl shadow-black/40 sm:h-[380px] sm:w-[380px]">
+        <div className="relative w-full max-w-[380px] aspect-square rounded-full border border-gold/20 bg-[var(--bg-card)] p-4 shadow-2xl shadow-black/40">
           {segmentCount > 0 ? (
             <svg
               viewBox="0 0 400 400"

@@ -66,7 +66,7 @@ export default function Services() {
           ))}
         </div>
 
-        <div className="mt-10 grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
+        <div className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3">
           {isLoading && (
             <div className="col-span-3 flex items-center justify-center py-10 text-gold">
               <div className="mr-3 h-6 w-6 animate-spin rounded-full border-4 border-t-gold border-[var(--border-color)]" />

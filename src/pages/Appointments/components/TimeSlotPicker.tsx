@@ -23,7 +23,7 @@ export function TimeSlotPicker({
         Los horarios ocupados aparecen en rojo.
       </p>
 
-      <div className="mt-5 grid gap-3 sm:grid-cols-2">
+      <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2">
         {loading && (
           <div className="col-span-2 flex items-center gap-3 py-6">
             <div className="h-6 w-6 animate-spin rounded-full border-4 border-t-gold border-gray-200" />

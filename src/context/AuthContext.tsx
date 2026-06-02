@@ -78,8 +78,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       await authService.register(payload)
     } catch (err: unknown) {
-      const apiError = err as { response?: { data?: { message?: string } } }
-      throw new Error(apiError?.response?.data?.message || 'Error al crear la cuenta')
+      const apiError = err as {
+        response?: { data?: { message?: string; error?: string; errors?: string[] } }
+        message?: string
+      }
+      const msg =
+        apiError?.response?.data?.message ||
+        apiError?.response?.data?.error ||
+        apiError?.response?.data?.errors?.[0] ||
+        apiError?.message ||
+        'Error al conectar con el servidor'
+      throw new Error(msg)
     } finally {
       setIsLoading(false)
     }

@@ -25,8 +25,8 @@ export function Footer() {
 
   return (
     <footer className="bg-[#0f0a04] text-white">
-      <div className="mx-auto max-w-[1580px] px-4 py-10 sm:px-6 lg:px-8">
-        <div className="grid gap-y-10 gap-x-0 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="mx-auto max-w-[1580px] px-[var(--page-px)] py-10 sm:px-6 lg:px-8">
+        <div className="grid gap-y-8 gap-x-0 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
           <div className="space-y-4">
             <div className="flex items-center gap-3 text-[14px] uppercase tracking-[0.35em] text-gold">
               <div className="relative flex h-10 w-10 items-center justify-center rounded-full border border-gold bg-[#0f0a04] overflow-hidden">

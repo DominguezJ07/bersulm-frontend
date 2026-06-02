@@ -24,8 +24,8 @@ export function BookingConfirmation({
   return (
     <main className="min-h-screen bg-[var(--bg-primary)] px-6 py-10 text-[var(--text-primary)] sm:px-8">
       <div className="mx-auto max-w-3xl rounded-[32px] border border-[var(--border-color)] bg-[var(--bg-secondary)] p-8 text-center shadow-xl">
-        <div className="mx-auto mb-8 flex h-28 w-28 items-center justify-center rounded-full bg-gold/15 text-gold shadow-[0_20px_50px_rgba(245,166,35,0.2)]">
-          <Check size={42} />
+        <div className="mx-auto mb-8 flex h-24 w-24 items-center justify-center rounded-full bg-gold/15 text-gold shadow-[0_20px_50px_rgba(245,166,35,0.2)] sm:h-28 sm:w-28">
+          <Check size={36} />
         </div>
         <h1 className="text-4xl font-semibold">¡Cita confirmada!</h1>
         <p className="mt-4 text-base text-[var(--text-secondary)]">
@@ -44,7 +44,7 @@ export function BookingConfirmation({
               <Scissors size={20} />
             </div>
           </div>
-          <div className="grid gap-3 sm:grid-cols-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
             <div>
               <p className="text-sm uppercase tracking-[0.35em] text-gold">Fecha</p>
               <p className="mt-2 text-[var(--text-primary)]">

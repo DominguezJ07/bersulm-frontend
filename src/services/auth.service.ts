@@ -10,4 +10,7 @@ export const authService = {
     const response = await api.post('/auth/register', payload)
     return response.data
   },
+  sendFcmToken: async (fcmToken: string): Promise<void> => {
+    await api.post('/auth/fcm-token', { fcmToken })
+  },
 }

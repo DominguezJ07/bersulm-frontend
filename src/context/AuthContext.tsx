@@ -1,7 +1,6 @@
 import { createContext, useMemo, useState, useCallback } from 'react'
-import { useNavigate } from 'react-router-dom'
 import { authService } from '@/services/auth.service'
-import { STORAGE_KEYS } from '@/constants/storage'
+import { setAuthToken } from '@/lib/api'
 import type { User, LoginPayload, RegisterPayload } from '@/types'
 
 interface AuthContextValue {
@@ -24,36 +23,12 @@ export const AuthContext = createContext<AuthContextValue>({
   logout: () => {},
 })
 
-function loadFromStorage<T>(key: string, fallback: T): T {
-  try {
-    const raw = localStorage.getItem(key)
-    if (!raw) return fallback
-    return JSON.parse(raw) as T
-  } catch {
-    return fallback
-  }
-}
-
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>(() =>
-    loadFromStorage<User | null>(STORAGE_KEYS.USER, null),
-  )
-  const [token, setToken] = useState<string | null>(() =>
-    localStorage.getItem(STORAGE_KEYS.TOKEN),
-  )
+  const [user, setUser] = useState<User | null>(null)
+  const [token, setToken] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
 
   const isAuthenticated = Boolean(token)
-
-  const persistAuth = useCallback(
-    (newToken: string, newUser: User) => {
-      localStorage.setItem(STORAGE_KEYS.TOKEN, newToken)
-      localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(newUser))
-      setToken(newToken)
-      setUser(newUser)
-    },
-    [],
-  )
 
   const login = useCallback(async (payload: LoginPayload) => {
     setIsLoading(true)
@@ -67,11 +42,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         throw new Error('Respuesta de login inválida')
       }
 
-      persistAuth(tokenValue, userData)
+      setToken(tokenValue)
+      setUser(userData)
+      setAuthToken(tokenValue)
+
+      const userId = userData._id || userData.id || ''
+      const { connectSocket } = await import('@/lib/socket')
+      connectSocket(tokenValue, userId)
+
+      try {
+        const { requestFcmToken } = await import('@/lib/firebase')
+        const fcmToken = await requestFcmToken()
+        if (fcmToken) {
+          await authService.sendFcmToken(fcmToken)
+        }
+      } catch { /* FCM not critical */ }
     } finally {
       setIsLoading(false)
     }
-  }, [persistAuth])
+  }, [])
 
   const register = useCallback(async (payload: RegisterPayload) => {
     setIsLoading(true)
@@ -95,10 +84,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [])
 
   const logout = useCallback(() => {
-    localStorage.removeItem(STORAGE_KEYS.TOKEN)
-    localStorage.removeItem(STORAGE_KEYS.USER)
+    localStorage.removeItem('bersulm_voted_reward')
     setToken(null)
     setUser(null)
+    setAuthToken(null)
+    import('@/lib/socket').then(({ disconnectSocket }) => disconnectSocket())
   }, [])
 
   const value = useMemo(

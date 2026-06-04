@@ -5,6 +5,12 @@ import { Toaster } from 'react-hot-toast'
 import App from './App'
 import './index.css'
 
+const THEME_KEY = 'bersulm_theme'
+const savedTheme = localStorage.getItem(THEME_KEY)
+if (savedTheme === 'light') {
+  document.documentElement.classList.add('light-mode')
+}
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {

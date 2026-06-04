@@ -1,5 +1,15 @@
 import axios from 'axios'
 
+let authToken: string | null = null
+
+export function setAuthToken(token: string | null) {
+  authToken = token
+}
+
+export function getAuthToken(): string | null {
+  return authToken
+}
+
 const api = axios.create({
   baseURL: '/api/v1',
   headers: {
@@ -10,9 +20,8 @@ const api = axios.create({
 
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('bersulm_token')
-    if (token && config.headers) {
-      config.headers.Authorization = `Bearer ${token}`
+    if (authToken && config.headers) {
+      config.headers.Authorization = `Bearer ${authToken}`
     }
     return config
   },
@@ -23,8 +32,7 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error?.response?.status === 401) {
-      const keys = ['bersulm_token', 'bersulm_user']
-      keys.forEach((key) => localStorage.removeItem(key))
+      authToken = null
       window.location.href = '/login'
     }
     return Promise.reject(error)

@@ -1,8 +1,8 @@
 import api from '@/lib/api'
-import type { Reward, Raffle, VoteEntry, ApiResponse } from '@/types'
+import type { Reward, Raffle, VoteEntry, ApiResponse, SorteoCurrentData, Participant } from '@/types'
 
 export const rewardsService = {
-  getCurrentRaffle: async (): Promise<ApiResponse<{ raffle: Raffle; countdown: number }>> => {
+  getCurrentRaffle: async (): Promise<ApiResponse<SorteoCurrentData>> => {
     const response = await api.get('/raffles/current')
     return response.data
   },
@@ -23,6 +23,18 @@ export const rewardsService = {
   },
   spin: async (raffleId: string): Promise<ApiResponse<{ winner: string }>> => {
     const response = await api.post('/raffles/spin', { raffleId })
+    return response.data
+  },
+  getParticipants: async (raffleId: string): Promise<ApiResponse<Participant[]>> => {
+    const response = await api.get(`/raffles/participants/${raffleId}`)
+    return response.data
+  },
+  addParticipant: async (raffleId: string, name: string): Promise<ApiResponse<unknown>> => {
+    const response = await api.post('/raffles/participants', { raffleId, name })
+    return response.data
+  },
+  removeParticipant: async (raffleId: string, participantId: string): Promise<ApiResponse<unknown>> => {
+    const response = await api.delete(`/raffles/participants/${raffleId}/${participantId}`)
     return response.data
   },
 }

@@ -127,14 +127,7 @@ export function useRewardsFlow() {
           })),
         )
 
-        const storedUser = (() => {
-          try {
-            return JSON.parse(localStorage.getItem('bersulm_user') || '{}')
-          } catch {
-            return {}
-          }
-        })()
-        const userIdLocal = storedUser?._id || storedUser?.id
+        const userIdLocal = user?._id || user?.id
         const myVote = allVotes.find(
           (v) => String(v.userId || v.user_id) === String(userIdLocal),
         )
@@ -145,6 +138,10 @@ export function useRewardsFlow() {
         if (myVote) {
           setUserHasVoted(true)
           setVotedRewardId(String(myVote.rewardId || myVote.reward))
+        } else {
+          clearCachedVote()
+          setUserHasVoted(false)
+          setVotedRewardId(null)
         }
       }
     } catch {

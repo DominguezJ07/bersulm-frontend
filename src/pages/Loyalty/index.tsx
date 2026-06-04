@@ -17,7 +17,7 @@ const benefits = [
 export default function Loyalty() {
   const { user: authUser, token } = useAuth()
   const navigate = useNavigate()
-  const isAdmin = authUser?.role === 'admin'
+  const isAdmin = Boolean(authUser?.role === 'admin' || (authUser as { isAdmin?: boolean })?.isAdmin)
 
   const [isFlipped, setIsFlipped] = useState(false)
   const [card, setCard] = useState<LoyaltyCard | null>(null)
@@ -53,10 +53,11 @@ export default function Loyalty() {
     const loadCard = async () => {
       try {
         const response = await loyaltyService.getCard()
-        const data = response.data
-        setCard(data ?? null)
+        const raw = response as unknown as Record<string, unknown> | null
+        const data = raw?.data ?? response
+        setCard((data as LoyaltyCard) ?? null)
       } catch {
-        // silent
+        toast.error('No se pudo cargar tu tarjeta de fidelidad')
       } finally {
         setIsLoading(false)
       }
@@ -69,7 +70,9 @@ export default function Loyalty() {
     setIsSearching(true)
     try {
       const response = await loyaltyService.searchUsers(query)
-      setSearchResults(response.data || [])
+      const raw = response as unknown as Record<string, unknown> | null
+      const data = raw?.data ?? response
+      setSearchResults((data as User[]) || [])
     } catch {
       setSearchResults([])
     } finally {
@@ -117,9 +120,12 @@ export default function Loyalty() {
     setUserCardLoading(true)
     try {
       const response = await loyaltyService.getUserCard(user._id || user.id || '')
-      setUserCard(response.data ?? null)
+      const raw = response as unknown as Record<string, unknown> | null
+      const data = raw?.data ?? response
+      setUserCard((data as LoyaltyCard) ?? null)
     } catch {
       setUserCard(null)
+      toast.error('Error al obtener la tarjeta del usuario')
     } finally {
       setUserCardLoading(false)
     }

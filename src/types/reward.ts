@@ -18,12 +18,46 @@ export interface Raffle {
   status: 'voting' | 'scheduled' | 'active' | 'completed'
   raffleDate: string
   winnerId?: string
-  winnerReward?: string
+  winnerReward?: string | WinnerReward
   winner?: string
   winnerName?: string
   result?: string
   participants?: string[]
   createdAt?: string
+}
+
+export interface WinnerReward {
+  _id: string
+  name: string
+  description?: string
+  icon: string
+  type: string
+}
+
+export interface SorteoVoteItem {
+  rewardId: string
+  name: string
+  icon: string
+  type: string
+  count: number
+  percentage: number
+}
+
+export interface Participant {
+  _id: string
+  name: string
+}
+
+export interface SorteoCurrentData {
+  raffle: Raffle
+  countdown: number
+  phase: 'voting' | 'active' | 'completed'
+  userHasVoted?: boolean
+  votes?: SorteoVoteItem[]
+  winnerReward?: WinnerReward | null
+  participantCount?: number
+  winnerId?: string
+  manualParticipants?: string[]
 }
 
 export interface VoteEntry {

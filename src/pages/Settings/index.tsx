@@ -63,7 +63,7 @@ interface AppointmentItem {
 export default function Settings() {
   const { user, token, logout } = useAuth()
   const navigate = useNavigate()
-  const [themeMode, setThemeMode] = useState('dark')
+  const [themeMode, setThemeMode] = useState(() => localStorage.getItem(THEME_KEY) || 'dark')
   const [notifications, setNotifications] = useState<NotificationSettings>({
     appointmentReminder: true,
     promotions: true,
@@ -72,13 +72,7 @@ export default function Settings() {
   const [isLoadingAppointments, setIsLoadingAppointments] = useState(true)
 
   useEffect(() => {
-    const savedTheme = localStorage.getItem(THEME_KEY) || 'dark'
-    setThemeMode(savedTheme)
-    if (savedTheme === 'light') {
-      document.documentElement.classList.add('light-mode')
-    } else {
-      document.documentElement.classList.remove('light-mode')
-    }
+    setThemeMode(localStorage.getItem(THEME_KEY) || 'dark')
 
     const savedNotifications = localStorage.getItem(NOTIFICATIONS_KEY)
     if (savedNotifications) {

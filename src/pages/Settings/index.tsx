@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '@/hooks/useAuth'
+import { useUserAppointments } from '@/hooks/useUserAppointments'
 import { Button, Card } from '@/components/ui'
-import api from '@/lib/api'
 
 const THEME_KEY = 'bersulm_theme'
 const NOTIFICATIONS_KEY = 'bersulm_notifications'
@@ -68,8 +68,7 @@ export default function Settings() {
     appointmentReminder: true,
     promotions: true,
   })
-  const [appointments, setAppointments] = useState<AppointmentItem[]>([])
-  const [isLoadingAppointments, setIsLoadingAppointments] = useState(true)
+  const { appointments, isLoading: isLoadingAppointments } = useUserAppointments({ limit: 3 })
 
   useEffect(() => {
     setThemeMode(localStorage.getItem(THEME_KEY) || 'dark')
@@ -87,37 +86,6 @@ export default function Settings() {
   useEffect(() => {
     localStorage.setItem(NOTIFICATIONS_KEY, JSON.stringify(notifications))
   }, [notifications])
-
-  useEffect(() => {
-    if (!token) {
-      setAppointments([])
-      setIsLoadingAppointments(false)
-      return
-    }
-
-    const controller = new AbortController()
-    const loadAppointments = async () => {
-      setIsLoadingAppointments(true)
-      try {
-        const response = await api.get('/appointments/user', {
-          signal: controller.signal,
-        })
-        const data = response.data?.data || response.data || []
-        setAppointments(Array.isArray(data) ? data.slice(0, 3) : [])
-      } catch {
-        if (!controller.signal.aborted) {
-          setAppointments([])
-        }
-      } finally {
-        if (!controller.signal.aborted) {
-          setIsLoadingAppointments(false)
-        }
-      }
-    }
-
-    loadAppointments()
-    return () => controller.abort()
-  }, [token])
 
   const handleThemeToggle = () => {
     const nextTheme = themeMode === 'light' ? 'dark' : 'light'

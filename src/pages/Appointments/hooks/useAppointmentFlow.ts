@@ -9,7 +9,7 @@ import type { Service, TimeSlot } from '@/types'
 export function useAppointmentFlow() {
   const navigate = useNavigate()
   const location = useLocation()
-  const { isAuthenticated } = useAuth()
+  const { isAuthenticated, user } = useAuth()
 
   const [step, setStep] = useState(0)
   const [selectedService, setSelectedService] = useState<Service | null>(null)
@@ -103,11 +103,8 @@ export function useAppointmentFlow() {
 
   const handleConfirm = useCallback(async () => {
     setRequestError('')
-    const token = localStorage.getItem('bersulm_token')
-    const savedUser = localStorage.getItem('bersulm_user')
-    const user = savedUser ? JSON.parse(savedUser) : null
 
-    if (!token || !user) {
+    if (!isAuthenticated || !user) {
       navigate('/login', { state: { from: location } })
       return
     }
@@ -115,7 +112,7 @@ export function useAppointmentFlow() {
     try {
       setSubmitting(true)
       const result = await appointmentsService.createAppointment({
-        userId: user._id || user.id,
+        userId: user._id || user.id || '',
         serviceId: selectedService?._id || selectedService?.id || '',
         date: formatISODate(selectedDate) || '',
         time: selectedTime,
@@ -135,7 +132,7 @@ export function useAppointmentFlow() {
     } finally {
       setSubmitting(false)
     }
-  }, [navigate, location, selectedService, selectedDate, selectedTime])
+  }, [navigate, location, selectedService, selectedDate, selectedTime, isAuthenticated, user])
 
   const canContinueStep1 = Boolean(selectedService)
   const canContinueStep2 = Boolean(selectedDate && selectedTime)

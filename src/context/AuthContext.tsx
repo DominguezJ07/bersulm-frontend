@@ -1,6 +1,7 @@
-import { createContext, useMemo, useState, useCallback } from 'react'
+import { createContext, useEffect, useMemo, useState, useCallback } from 'react'
 import { authService } from '@/services/auth.service'
 import { setAuthToken } from '@/lib/api'
+import { STORAGE_KEYS } from '@/constants/storage'
 import type { User, LoginPayload, RegisterPayload } from '@/types'
 
 interface AuthContextValue {
@@ -24,11 +25,27 @@ export const AuthContext = createContext<AuthContextValue>({
 })
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>(null)
-  const [token, setToken] = useState<string | null>(null)
+  const [user, setUser] = useState<User | null>(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEYS.USER)
+      return saved ? JSON.parse(saved) : null
+    } catch {
+      return null
+    }
+  })
+  const [token, setToken] = useState<string | null>(() => {
+    return localStorage.getItem(STORAGE_KEYS.TOKEN)
+  })
   const [isLoading, setIsLoading] = useState(false)
 
   const isAuthenticated = Boolean(token)
+
+  useEffect(() => {
+    const savedToken = localStorage.getItem(STORAGE_KEYS.TOKEN)
+    if (savedToken) {
+      setAuthToken(savedToken)
+    }
+  }, [])
 
   const login = useCallback(async (payload: LoginPayload) => {
     setIsLoading(true)
@@ -40,6 +57,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       if (!tokenValue || !userData) {
         throw new Error('Respuesta de login inválida')
+      }
+
+      localStorage.setItem(STORAGE_KEYS.TOKEN, tokenValue)
+      localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(userData))
+      const refreshToken = (data as { refreshToken?: string }).refreshToken
+      if (refreshToken) {
+        localStorage.setItem(STORAGE_KEYS.REFRESH_TOKEN, refreshToken)
       }
 
       setToken(tokenValue)
@@ -84,6 +108,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [])
 
   const logout = useCallback(() => {
+    localStorage.removeItem(STORAGE_KEYS.TOKEN)
+    localStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN)
+    localStorage.removeItem(STORAGE_KEYS.USER)
     localStorage.removeItem('bersulm_voted_reward')
     setToken(null)
     setUser(null)

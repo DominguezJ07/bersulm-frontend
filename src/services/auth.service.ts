@@ -8,6 +8,9 @@ export const authService = {
   },
   register: async (payload: RegisterPayload): Promise<ApiResponse<AuthResponse>> => {
     const response = await api.post('/auth/register', payload)
+    if (!response.data?.success) {
+      throw new Error(response.data?.message || 'Error del servidor al crear la cuenta')
+    }
     return response.data
   },
   sendFcmToken: async (fcmToken: string): Promise<void> => {

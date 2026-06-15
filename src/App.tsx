@@ -1,5 +1,5 @@
 import { lazy, Suspense } from 'react'
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { HelmetProvider } from 'react-helmet-async'
 import { AuthProvider } from './context/AuthContext'
 import { Layout } from './components/layout'
@@ -15,6 +15,7 @@ const LoyaltyMinigame = lazy(() => import('./pages/Loyalty/Minigame'))
 const Settings = lazy(() => import('./pages/Settings'))
 const Login = lazy(() => import('./pages/Auth/Login'))
 const Register = lazy(() => import('./pages/Auth/Register'))
+const AdminDashboard = lazy(() => import('./pages/Admin'))
 
 function PageLoader() {
   return (
@@ -38,7 +39,7 @@ function App() {
                 <Route element={<Layout />}>
                   <Route path="/" element={<Home />} />
                   <Route path="/servicios" element={<Services />} />
-                  <Route path="/services" element={<Services />} />
+                  <Route path="/services" element={<Navigate to="/servicios" replace />} />
 
                   <Route
                     path="/reservas"
@@ -48,17 +49,10 @@ function App() {
                       </PrivateRoute>
                     }
                   />
-                  <Route
-                    path="/appointments"
-                    element={
-                      <PrivateRoute>
-                        <Appointments />
-                      </PrivateRoute>
-                    }
-                  />
+                  <Route path="/appointments" element={<Navigate to="/reservas" replace />} />
 
                   <Route path="/premios" element={<Rewards />} />
-                  <Route path="/rewards" element={<Rewards />} />
+                  <Route path="/rewards" element={<Navigate to="/premios" replace />} />
 
                   <Route
                     path="/fidelidad"
@@ -68,14 +62,7 @@ function App() {
                       </PrivateRoute>
                     }
                   />
-                  <Route
-                    path="/loyalty"
-                    element={
-                      <PrivateRoute>
-                        <Loyalty />
-                      </PrivateRoute>
-                    }
-                  />
+                  <Route path="/loyalty" element={<Navigate to="/fidelidad" replace />} />
 
                   <Route
                     path="/fidelidad/minijuego"
@@ -85,17 +72,21 @@ function App() {
                       </PrivateRoute>
                     }
                   />
+                  <Route path="/loyalty/minigame" element={<Navigate to="/fidelidad/minijuego" replace />} />
+
+                  <Route path="/ajustes" element={<Settings />} />
+                  <Route path="/settings" element={<Navigate to="/ajustes" replace />} />
+
                   <Route
-                    path="/loyalty/minigame"
+                    path="/admin"
                     element={
-                      <PrivateRoute>
-                        <LoyaltyMinigame />
+                      <PrivateRoute adminOnly>
+                        <AdminDashboard />
                       </PrivateRoute>
                     }
                   />
 
-                  <Route path="/ajustes" element={<Settings />} />
-                  <Route path="/settings" element={<Settings />} />
+                  <Route path="*" element={<Navigate to="/" replace />} />
                 </Route>
               </Routes>
             </Suspense>

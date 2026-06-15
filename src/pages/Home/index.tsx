@@ -1,6 +1,12 @@
 import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { Helmet } from 'react-helmet-async'
 import { CalendarDays, Scissors, Gift, Star } from 'lucide-react'
+import { useQuery } from '@tanstack/react-query'
+import { useServices } from '@/hooks/useServices'
+import { galleryService } from '@/services/gallery.service'
+import { ROUTES } from '@/constants/routes'
+import type { Service, GalleryItem } from '@/types'
 
 const galleryImages = [
   { url: 'https://images.unsplash.com/photo-1605497788044-5a32c7078486?w=600&q=80', category: 'cortes', label: 'Fade Clásico' },
@@ -29,10 +35,40 @@ const faqs = [
   { q: '¿Cuánto dura un corte?', a: 'Un corte estándar toma entre 25 y 45 minutos según el servicio y estilo elegido.' },
 ]
 
+function formatPrice(price: number | string): string {
+  const num = typeof price === 'string' ? parseFloat(price) : price
+  if (isNaN(num)) return String(price)
+  return `$${num.toLocaleString('es-CO')}`
+}
+
 export default function Home() {
+  const navigate = useNavigate()
   const [mounted, setMounted] = useState(false)
   const [faqOpen, setFaqOpen] = useState<number | null>(null)
   const [galleryFilter, setGalleryFilter] = useState('todos')
+
+  const { data: services, isLoading: servicesLoading } = useServices()
+
+  const { data: galleryData, isLoading: galleryLoading } = useQuery({
+    queryKey: ['gallery'],
+    queryFn: () => galleryService.getGallery(),
+    staleTime: 5 * 60 * 1000,
+  })
+
+  const rawGalleryItems: GalleryItem[] = galleryData?.data ?? []
+  const galleryItems =
+    rawGalleryItems.length > 0
+      ? rawGalleryItems.map((item) => ({
+          url: item.imageUrl,
+          label: item.title,
+          category: item.category,
+        }))
+      : galleryImages
+
+  const activeServices: Service[] = (services ?? [])
+    .filter((s) => (s as Service & { isActive?: boolean }).isActive !== false)
+    .slice(0, 3)
+  const resolvedServices = activeServices.length > 0 ? activeServices : []
 
   useEffect(() => {
     setMounted(true)
@@ -59,10 +95,20 @@ export default function Home() {
             Vive una experiencia premium con cortes, barba y tratamientos diseñados para cada detalle.
           </p>
           <div className="mt-10 flex flex-col items-center gap-4 sm:flex-row">
-            <button className="inline-flex items-center gap-3 rounded-full bg-gold px-8 py-4 text-surface-dark transition hover:brightness-110">
+            <button
+              onClick={() => navigate(ROUTES.RESERVAS)}
+              className="inline-flex items-center gap-3 rounded-full bg-gold px-8 py-4 text-surface-dark transition hover:brightness-110"
+            >
               <CalendarDays size={18} /> Reservar cita
             </button>
-            <button className="inline-flex items-center gap-3 rounded-full border border-[var(--border-color)] bg-[var(--bg-secondary)] px-8 py-4 text-[var(--text-secondary)] transition hover:border-gold hover:text-[var(--text-primary)]">
+            <button
+              onClick={() => {
+                document.querySelector('#servicios-section')?.scrollIntoView({
+                  behavior: 'smooth',
+                })
+              }}
+              className="inline-flex items-center gap-3 rounded-full border border-[var(--border-color)] bg-[var(--bg-secondary)] px-8 py-4 text-[var(--text-secondary)] transition hover:border-gold hover:text-[var(--text-primary)]"
+            >
               Ver servicios
             </button>
           </div>
@@ -80,7 +126,7 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="py-20">
+      <section id="servicios-section" className="py-20">
         <div className="mx-auto max-w-6xl px-6">
           <div className="mb-10 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
             <div>
@@ -93,15 +139,41 @@ export default function Home() {
           </div>
 
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3">
-            {features.map(({ icon: Icon, title, desc }) => (
-              <div key={title} className="rounded-[32px] border border-[var(--border-color)] bg-[var(--bg-secondary)] p-8 shadow-xl shadow-black/5 transition hover:-translate-y-1">
-                <div className="mb-6 inline-flex h-14 w-14 items-center justify-center rounded-3xl bg-[var(--bg-tertiary)] text-gold">
-                  <Icon size={24} />
+            {servicesLoading ? (
+              Array.from({ length: 3 }).map((_, i) => (
+                <div key={i} className="rounded-[32px] border border-[var(--border-color)] bg-[var(--bg-secondary)] p-8 shadow-xl shadow-black/5">
+                  <div className="mb-6 inline-flex h-14 w-14 animate-pulse items-center justify-center rounded-3xl bg-[var(--bg-tertiary)]" />
+                  <div className="h-7 w-2/3 animate-pulse rounded bg-[var(--bg-tertiary)]" />
+                  <div className="mt-3 space-y-2">
+                    <div className="h-4 w-full animate-pulse rounded bg-[var(--bg-tertiary)]" />
+                    <div className="h-4 w-4/5 animate-pulse rounded bg-[var(--bg-tertiary)]" />
+                  </div>
                 </div>
-                <h3 className="text-xl font-semibold text-[var(--text-primary)]">{title}</h3>
-                <p className="mt-3 text-sm text-[var(--text-secondary)]">{desc}</p>
-              </div>
-            ))}
+              ))
+            ) : resolvedServices.length > 0 ? (
+              resolvedServices.map((service) => (
+                <div key={service._id || service.id} className="rounded-[32px] border border-[var(--border-color)] bg-[var(--bg-secondary)] p-8 shadow-xl shadow-black/5 transition hover:-translate-y-1">
+                  <div className="mb-6 inline-flex h-14 w-14 items-center justify-center rounded-3xl bg-[var(--bg-tertiary)] text-gold">
+                    <Scissors size={24} />
+                  </div>
+                  <h3 className="text-xl font-semibold text-[var(--text-primary)]">{service.name}</h3>
+                  <p className="mt-3 text-sm text-[var(--text-secondary)]">{service.description || service.desc || ''}</p>
+                  {service.price != null && (
+                    <p className="mt-4 text-lg font-bold text-gold">{formatPrice(service.price)}</p>
+                  )}
+                </div>
+              ))
+            ) : (
+              features.map(({ icon: Icon, title, desc }) => (
+                <div key={title} className="rounded-[32px] border border-[var(--border-color)] bg-[var(--bg-secondary)] p-8 shadow-xl shadow-black/5 transition hover:-translate-y-1">
+                  <div className="mb-6 inline-flex h-14 w-14 items-center justify-center rounded-3xl bg-[var(--bg-tertiary)] text-gold">
+                    <Icon size={24} />
+                  </div>
+                  <h3 className="text-xl font-semibold text-[var(--text-primary)]">{title}</h3>
+                  <p className="mt-3 text-sm text-[var(--text-secondary)]">{desc}</p>
+                </div>
+              ))
+            )}
           </div>
         </div>
       </section>
@@ -126,14 +198,25 @@ export default function Home() {
           </div>
 
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {galleryImages
-              .filter((image) => galleryFilter === 'todos' || image.category === galleryFilter)
-              .map((image) => (
-                <div key={image.url} className="overflow-hidden rounded-[32px] bg-[var(--bg-secondary)] shadow-xl shadow-black/10">
-                  <img src={image.url} alt={image.label} className="h-72 w-full object-cover" />
-                  <div className="p-4 text-sm text-[var(--text-primary)]">{image.label}</div>
+            {galleryLoading ? (
+              Array.from({ length: 6 }).map((_, i) => (
+                <div key={i} className="overflow-hidden rounded-[32px] bg-[var(--bg-secondary)] shadow-xl shadow-black/10">
+                  <div className="h-72 w-full animate-pulse bg-[var(--bg-tertiary)]" />
+                  <div className="p-4">
+                    <div className="h-5 w-2/3 animate-pulse rounded bg-[var(--bg-tertiary)]" />
+                  </div>
                 </div>
-              ))}
+              ))
+            ) : (
+              galleryItems
+                .filter((image) => galleryFilter === 'todos' || image.category === galleryFilter)
+                .map((image) => (
+                  <div key={image.url} className="overflow-hidden rounded-[32px] bg-[var(--bg-secondary)] shadow-xl shadow-black/10">
+                    <img src={image.url} alt={image.label} className="h-72 w-full object-cover" />
+                    <div className="p-4 text-sm text-[var(--text-primary)]">{image.label}</div>
+                  </div>
+                ))
+            )}
           </div>
         </div>
       </section>

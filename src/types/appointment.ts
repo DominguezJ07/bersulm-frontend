@@ -6,7 +6,7 @@ export interface Appointment {
   time: string
   totalPrice?: number | string
   notes?: string
-  status?: 'confirmed' | 'cancelled' | 'completed'
+  status?: 'pending' | 'confirmed' | 'cancelled' | 'completed'
   service?: import('./service').Service
 }
 

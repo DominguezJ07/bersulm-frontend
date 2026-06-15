@@ -1,7 +1,14 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { z } from 'zod'
+import { X } from 'lucide-react'
+import toast from 'react-hot-toast'
 import { useAuth } from '@/hooks/useAuth'
 import { useUserAppointments } from '@/hooks/useUserAppointments'
+import { authService } from '@/services/auth.service'
+import { ROUTES } from '@/constants/routes'
 import { Button, Card } from '@/components/ui'
 
 const THEME_KEY = 'bersulm_theme'
@@ -60,8 +67,28 @@ interface AppointmentItem {
   hour?: string
 }
 
+const editProfileSchema = z.object({
+  name: z.string().min(1, 'El nombre es obligatorio'),
+  phone: z.string().optional(),
+})
+
+type EditProfileForm = z.infer<typeof editProfileSchema>
+
+const changePasswordSchema = z
+  .object({
+    currentPassword: z.string().min(1, 'La contraseña actual es obligatoria'),
+    newPassword: z.string().min(6, 'Mínimo 6 caracteres'),
+    confirmPassword: z.string(),
+  })
+  .refine((d) => d.newPassword === d.confirmPassword, {
+    message: 'Las contraseñas no coinciden',
+    path: ['confirmPassword'],
+  })
+
+type ChangePasswordForm = z.infer<typeof changePasswordSchema>
+
 export default function Settings() {
-  const { user, token, logout } = useAuth()
+  const { user, logout, updateUser } = useAuth()
   const navigate = useNavigate()
   const [themeMode, setThemeMode] = useState(() => localStorage.getItem(THEME_KEY) || 'dark')
   const [notifications, setNotifications] = useState<NotificationSettings>({
@@ -69,6 +96,22 @@ export default function Settings() {
     promotions: true,
   })
   const { appointments, isLoading: isLoadingAppointments } = useUserAppointments({ limit: 3 })
+
+  const [showEditProfile, setShowEditProfile] = useState(false)
+  const [showChangePassword, setShowChangePassword] = useState(false)
+
+  const editProfileForm = useForm<EditProfileForm>({
+    resolver: zodResolver(editProfileSchema),
+    defaultValues: { name: user?.name || '', phone: user?.phone || '' },
+  })
+
+  const changePasswordForm = useForm<ChangePasswordForm>({
+    resolver: zodResolver(changePasswordSchema),
+    defaultValues: { currentPassword: '', newPassword: '', confirmPassword: '' },
+  })
+
+  const editProfileRef = useRef<HTMLDivElement>(null)
+  const changePasswordRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     setThemeMode(localStorage.getItem(THEME_KEY) || 'dark')
@@ -86,6 +129,43 @@ export default function Settings() {
   useEffect(() => {
     localStorage.setItem(NOTIFICATIONS_KEY, JSON.stringify(notifications))
   }, [notifications])
+
+  useEffect(() => {
+    if (showEditProfile) {
+      editProfileForm.reset({ name: user?.name || '', phone: user?.phone || '' })
+    }
+  }, [showEditProfile, user, editProfileForm])
+
+  const handleEditProfileSubmit = async (data: EditProfileForm) => {
+    try {
+      await authService.updateProfile(data)
+      updateUser(data)
+      setShowEditProfile(false)
+      toast.success('Perfil actualizado')
+    } catch (err: unknown) {
+      const msg =
+        (err as { response?: { data?: { message?: string } } })?.response?.data?.message ||
+        'Error al actualizar el perfil'
+      toast.error(msg)
+    }
+  }
+
+  const handleChangePasswordSubmit = async (data: ChangePasswordForm) => {
+    try {
+      await authService.changePassword({
+        currentPassword: data.currentPassword,
+        newPassword: data.newPassword,
+      })
+      setShowChangePassword(false)
+      changePasswordForm.reset()
+      toast.success('Contraseña actualizada')
+    } catch (err: unknown) {
+      const msg =
+        (err as { response?: { data?: { message?: string } } })?.response?.data?.message ||
+        'Error al cambiar la contraseña'
+      changePasswordForm.setError('currentPassword', { message: msg })
+    }
+  }
 
   const handleThemeToggle = () => {
     const nextTheme = themeMode === 'light' ? 'dark' : 'light'
@@ -143,10 +223,10 @@ export default function Settings() {
               </div>
             </div>
             <div className="flex flex-col gap-3 sm:items-end">
-              <Button variant="primary" className="w-full sm:w-auto">
+              <Button variant="primary" className="w-full sm:w-auto" onClick={() => setShowEditProfile(true)}>
                 Editar Perfil
               </Button>
-              <Button variant="secondary" className="w-full sm:w-auto">
+              <Button variant="secondary" className="w-full sm:w-auto" onClick={() => setShowChangePassword(true)}>
                 Cambiar Contraseña
               </Button>
             </div>
@@ -247,7 +327,7 @@ export default function Settings() {
               <p className="text-sm uppercase tracking-[0.35em] text-gold">Mis reservas</p>
               <h2 className="mt-3 text-2xl font-semibold">Últimas 3 reservas</h2>
             </div>
-            <Button variant="secondary">Ver todas</Button>
+            <Button variant="secondary" onClick={() => navigate(ROUTES.RESERVAS)}>Ver todas</Button>
           </div>
 
           <div className="mt-6 space-y-4">
@@ -328,12 +408,137 @@ export default function Settings() {
             <Button variant="secondary" className="w-full sm:w-auto" onClick={handleLogout}>
               Cerrar Sesión
             </Button>
-            <Button variant="primary" className="w-full sm:w-auto">
+            <Button variant="primary" className="w-full sm:w-auto" onClick={() => setShowChangePassword(true)}>
               Cambiar Contraseña
             </Button>
           </div>
         </Card>
       </div>
+
+      {showEditProfile && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setShowEditProfile(false)
+          }}
+        >
+          <div
+            ref={editProfileRef}
+            className="mx-4 w-full max-w-md rounded-[24px] border border-gold/20 bg-[var(--bg-secondary)] p-8 shadow-2xl"
+          >
+            <div className="mb-6 flex items-center justify-between">
+              <h2 className="text-xl font-semibold">Editar Perfil</h2>
+              <button
+                type="button"
+                onClick={() => setShowEditProfile(false)}
+                className="text-[var(--text-muted)] hover:text-[var(--text-primary)]"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <form onSubmit={editProfileForm.handleSubmit(handleEditProfileSubmit)} className="space-y-4">
+              <div>
+                <label className="mb-2 block text-sm text-[var(--text-secondary)]">Nombre</label>
+                <input
+                  {...editProfileForm.register('name')}
+                  className="w-full rounded-xl border border-[var(--border-color)] bg-[var(--bg-card)] px-4 py-3 text-sm text-[var(--text-primary)] outline-none transition-all focus:border-gold"
+                />
+                {editProfileForm.formState.errors.name && (
+                  <p className="mt-1 text-xs text-red-400">{editProfileForm.formState.errors.name.message}</p>
+                )}
+              </div>
+
+              <div>
+                <label className="mb-2 block text-sm text-[var(--text-secondary)]">Teléfono</label>
+                <input
+                  {...editProfileForm.register('phone')}
+                  className="w-full rounded-xl border border-[var(--border-color)] bg-[var(--bg-card)] px-4 py-3 text-sm text-[var(--text-primary)] outline-none transition-all focus:border-gold"
+                />
+              </div>
+
+              <button
+                type="submit"
+                disabled={editProfileForm.formState.isSubmitting}
+                className="w-full rounded-xl bg-gold px-6 py-3 text-sm font-semibold text-surface-dark transition-all hover:brightness-110 active:scale-95 disabled:opacity-60"
+              >
+                {editProfileForm.formState.isSubmitting ? 'Guardando...' : 'Guardar Cambios'}
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {showChangePassword && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setShowChangePassword(false)
+          }}
+        >
+          <div
+            ref={changePasswordRef}
+            className="mx-4 w-full max-w-md rounded-[24px] border border-gold/20 bg-[var(--bg-secondary)] p-8 shadow-2xl"
+          >
+            <div className="mb-6 flex items-center justify-between">
+              <h2 className="text-xl font-semibold">Cambiar Contraseña</h2>
+              <button
+                type="button"
+                onClick={() => setShowChangePassword(false)}
+                className="text-[var(--text-muted)] hover:text-[var(--text-primary)]"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <form onSubmit={changePasswordForm.handleSubmit(handleChangePasswordSubmit)} className="space-y-4">
+              <div>
+                <label className="mb-2 block text-sm text-[var(--text-secondary)]">Contraseña actual</label>
+                <input
+                  type="password"
+                  {...changePasswordForm.register('currentPassword')}
+                  className="w-full rounded-xl border border-[var(--border-color)] bg-[var(--bg-card)] px-4 py-3 text-sm text-[var(--text-primary)] outline-none transition-all focus:border-gold"
+                />
+                {changePasswordForm.formState.errors.currentPassword && (
+                  <p className="mt-1 text-xs text-red-400">{changePasswordForm.formState.errors.currentPassword.message}</p>
+                )}
+              </div>
+
+              <div>
+                <label className="mb-2 block text-sm text-[var(--text-secondary)]">Nueva contraseña</label>
+                <input
+                  type="password"
+                  {...changePasswordForm.register('newPassword')}
+                  className="w-full rounded-xl border border-[var(--border-color)] bg-[var(--bg-card)] px-4 py-3 text-sm text-[var(--text-primary)] outline-none transition-all focus:border-gold"
+                />
+                {changePasswordForm.formState.errors.newPassword && (
+                  <p className="mt-1 text-xs text-red-400">{changePasswordForm.formState.errors.newPassword.message}</p>
+                )}
+              </div>
+
+              <div>
+                <label className="mb-2 block text-sm text-[var(--text-secondary)]">Confirmar nueva contraseña</label>
+                <input
+                  type="password"
+                  {...changePasswordForm.register('confirmPassword')}
+                  className="w-full rounded-xl border border-[var(--border-color)] bg-[var(--bg-card)] px-4 py-3 text-sm text-[var(--text-primary)] outline-none transition-all focus:border-gold"
+                />
+                {changePasswordForm.formState.errors.confirmPassword && (
+                  <p className="mt-1 text-xs text-red-400">{changePasswordForm.formState.errors.confirmPassword.message}</p>
+                )}
+              </div>
+
+              <button
+                type="submit"
+                disabled={changePasswordForm.formState.isSubmitting}
+                className="w-full rounded-xl bg-gold px-6 py-3 text-sm font-semibold text-surface-dark transition-all hover:brightness-110 active:scale-95 disabled:opacity-60"
+              >
+                {changePasswordForm.formState.isSubmitting ? 'Cambiando...' : 'Cambiar Contraseña'}
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
     </main>
   )
 }

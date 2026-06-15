@@ -35,7 +35,7 @@ export default function Login() {
     try {
       await login(data)
       const from = (location.state as { from?: { pathname: string } })?.from?.pathname
-      const validRedirects = [ROUTES.APPOINTMENTS, ROUTES.LOYALTY, ROUTES.SETTINGS]
+      const validRedirects = [ROUTES.RESERVAS, ROUTES.LOYALTY, ROUTES.SETTINGS]
       const redirectTo = from && validRedirects.includes(from as typeof validRedirects[number]) ? from : '/'
       navigate(redirectTo as string, { replace: true })
     } catch {

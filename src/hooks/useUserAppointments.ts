@@ -1,9 +1,10 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useAuth } from './useAuth'
 import { appointmentsService } from '@/services/appointments.service'
 
 interface UseUserAppointmentsOptions {
   limit?: number
+  initialPage?: number
 }
 
 interface AppointmentItem {
@@ -21,48 +22,124 @@ interface AppointmentItem {
   hour?: string
 }
 
-export function useUserAppointments({ limit = 3 }: UseUserAppointmentsOptions = {}) {
+interface UseUserAppointmentsReturn {
+  appointments: AppointmentItem[]
+  isLoading: boolean
+  error: string | null
+  page: number
+  totalPages: number
+  total: number
+  hasNextPage: boolean
+  hasPrevPage: boolean
+  goToPage: (page: number) => void
+  nextPage: () => void
+  prevPage: () => void
+  refetch: () => void
+}
+
+export function useUserAppointments({
+  limit = 20,
+  initialPage = 1,
+}: UseUserAppointmentsOptions = {}): UseUserAppointmentsReturn {
   const { token } = useAuth()
   const [appointments, setAppointments] = useState<AppointmentItem[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [page, setPage] = useState(initialPage)
+  const [totalPages, setTotalPages] = useState(1)
+  const [total, setTotal] = useState(0)
 
-  const loadAppointments = useCallback(async (signal: AbortSignal) => {
-    if (!token) {
-      setAppointments([])
-      setIsLoading(false)
-      return
-    }
+  const abortRef = useRef<AbortController | null>(null)
 
-    setIsLoading(true)
-    setError(null)
-    try {
-      const res = await appointmentsService.getAppointments()
-      if (signal.aborted) return
-      const list = (Array.isArray(res.data) ? res.data.slice(0, limit) : []) as AppointmentItem[]
-      setAppointments(list)
-    } catch (err) {
-      if (!signal.aborted) {
-        setError('Error al cargar las reservas')
+  const load = useCallback(
+    async (targetPage: number) => {
+      if (!token) {
         setAppointments([])
-      }
-    } finally {
-      if (!signal.aborted) {
         setIsLoading(false)
+        return
       }
-    }
-  }, [token, limit])
+
+      if (abortRef.current) {
+        abortRef.current.abort()
+      }
+      abortRef.current = new AbortController()
+
+      setIsLoading(true)
+      setError(null)
+
+      try {
+        const res = await appointmentsService.getAppointments({
+          page: targetPage,
+          limit,
+        })
+
+        if (abortRef.current?.signal.aborted) return
+
+        const list = (Array.isArray(res.data) ? res.data : []) as AppointmentItem[]
+        setAppointments(list)
+        setPage(targetPage)
+        setTotalPages((res as unknown as { totalPages?: number }).totalPages ?? 1)
+        setTotal((res as unknown as { total?: number }).total ?? list.length)
+      } catch (err) {
+        if (!abortRef.current?.signal.aborted) {
+          setError('Error al cargar las reservas')
+          setAppointments([])
+        }
+      } finally {
+        if (!abortRef.current?.signal.aborted) {
+          setIsLoading(false)
+        }
+      }
+    },
+    [token, limit],
+  )
 
   useEffect(() => {
-    const controller = new AbortController()
-    loadAppointments(controller.signal)
-    return () => controller.abort()
-  }, [loadAppointments])
+    load(initialPage)
+    return () => {
+      if (abortRef.current) {
+        abortRef.current.abort()
+      }
+    }
+  }, [load, initialPage])
 
   const refetch = useCallback(() => {
-    const controller = new AbortController()
-    loadAppointments(controller.signal)
-  }, [loadAppointments])
+    load(page)
+  }, [load, page])
 
-  return { appointments, isLoading, error, refetch }
+  const goToPage = useCallback(
+    (target: number) => {
+      if (target >= 1 && target <= totalPages) {
+        load(target)
+      }
+    },
+    [load, totalPages],
+  )
+
+  const nextPage = useCallback(() => {
+    if (page < totalPages) {
+      load(page + 1)
+    }
+  }, [load, page, totalPages])
+
+  const prevPage = useCallback(() => {
+    if (page > 1) {
+      load(page - 1)
+    }
+  }, [load, page])
+
+  return {
+    appointments,
+    isLoading,
+    error,
+    page,
+    totalPages,
+    total,
+    hasNextPage: page < totalPages,
+    hasPrevPage: page > 1,
+    goToPage,
+    nextPage,
+    prevPage,
+    refetch,
+  }
 }

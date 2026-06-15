@@ -1,7 +1,6 @@
 export const ROUTES = {
   HOME: '/',
   SERVICES: '/servicios',
-  APPOINTMENTS: '/appointments',
   RESERVAS: '/reservas',
   REWARDS: '/premios',
   LOYALTY: '/fidelidad',
@@ -9,6 +8,7 @@ export const ROUTES = {
   SETTINGS: '/ajustes',
   LOGIN: '/login',
   REGISTER: '/register',
+  ADMIN: '/admin',
 } as const
 
 export type RouteKey = keyof typeof ROUTES

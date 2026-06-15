@@ -12,6 +12,7 @@ interface AuthContextValue {
   login: (payload: LoginPayload) => Promise<void>
   register: (payload: RegisterPayload) => Promise<void>
   logout: () => void
+  updateUser: (userData: Partial<User>) => void
 }
 
 export const AuthContext = createContext<AuthContextValue>({
@@ -22,6 +23,7 @@ export const AuthContext = createContext<AuthContextValue>({
   login: async () => {},
   register: async () => {},
   logout: () => {},
+  updateUser: () => {},
 })
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
@@ -107,6 +109,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [])
 
+  const updateUser = useCallback((userData: Partial<User>) => {
+    setUser((prev) => (prev ? { ...prev, ...userData } : null))
+    const current = localStorage.getItem(STORAGE_KEYS.USER)
+    if (current) {
+      try {
+        const parsed = JSON.parse(current)
+        localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify({ ...parsed, ...userData }))
+      } catch {
+        // ignore
+      }
+    }
+  }, [])
+
   const logout = useCallback(() => {
     localStorage.removeItem(STORAGE_KEYS.TOKEN)
     localStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN)
@@ -127,8 +142,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       login,
       register,
       logout,
+      updateUser,
     }),
-    [user, token, isAuthenticated, isLoading, login, register, logout],
+    [user, token, isAuthenticated, isLoading, login, register, logout, updateUser],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

@@ -7,8 +7,11 @@ import type {
 } from '@/types'
 
 export const appointmentsService = {
-  getAppointments: async (): Promise<ApiResponse<Appointment[]>> => {
-    const response = await api.get('/appointments/user')
+  getAppointments: async (params?: {
+    page?: number
+    limit?: number
+  }): Promise<ApiResponse<Appointment[]>> => {
+    const response = await api.get('/appointments/user', { params })
     return response.data
   },
   createAppointment: async (

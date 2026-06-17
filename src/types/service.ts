@@ -11,6 +11,11 @@ export interface Service {
   duration?: number
   length?: number
   duration_minutes?: number
-  category?: string
+  category?: 'corte' | 'barba' | 'color' | 'extra' | string
   image?: string
+  icon?: string
+  isActive?: boolean
+  order?: number
+  createdAt?: string
+  updatedAt?: string
 }

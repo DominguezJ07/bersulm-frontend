@@ -5,6 +5,7 @@ import { CalendarDays, Scissors, Gift, Star } from 'lucide-react'
 import { useQuery } from '@tanstack/react-query'
 import { useServices } from '@/hooks/useServices'
 import { galleryService } from '@/services/gallery.service'
+import { reviewsService } from '@/services/reviews.service'
 import { ROUTES } from '@/constants/routes'
 import type { Service, GalleryItem } from '@/types'
 
@@ -54,6 +55,16 @@ export default function Home() {
     queryFn: () => galleryService.getGallery(),
     staleTime: 5 * 60 * 1000,
   })
+
+  const { data: reviewsData } = useQuery({
+    queryKey: ['reviews-home'],
+    queryFn: () => reviewsService.getApproved({ limit: 6 }),
+    staleTime: 10 * 60 * 1000,
+  })
+
+  const reviews = (reviewsData as any)?.data?.reviews
+    ?? (reviewsData as any)?.reviews
+    ?? []
 
   const rawGalleryItems: GalleryItem[] = galleryData?.data ?? []
   const galleryItems =
@@ -230,14 +241,72 @@ export default function Home() {
               <p className="mt-4 text-[var(--text-secondary)]">Cortes impecables, servicio atento y resultados fuera de serie.</p>
             </div>
             <div className="grid gap-4">
-              {['Excelente servicio y trato', 'Ambiente profesional y cómodo', 'Siempre vuelvo por su calidad'].map((text) => (
-                <div key={text} className="rounded-[32px] bg-[var(--bg-tertiary)] p-6">
-                  <p className="text-lg font-semibold text-[var(--text-primary)]">{text}</p>
-                  <p className="mt-3 text-sm text-[var(--text-secondary)]">
-                    Servicio rápido, resultados consistentes y atención cercana desde la reserva hasta el final.
-                  </p>
-                </div>
-              ))}
+              {reviews.length > 0 ? (
+                reviews.slice(0, 3).map((review: any) => (
+                  <div key={review._id}
+                    className="rounded-[32px] bg-[var(--bg-tertiary)] p-6">
+                    <div className="mb-3 flex gap-1">
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <Star
+                          key={star}
+                          size={16}
+                          className={star <= review.rating
+                            ? 'fill-gold text-gold'
+                            : 'text-[var(--border-color)]'}
+                        />
+                      ))}
+                    </div>
+                    <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
+                      "{review.comment}"
+                    </p>
+                    <div className="mt-4 flex items-center gap-3">
+                      {review.authorAvatar ? (
+                        <img
+                          src={review.authorAvatar}
+                          alt={review.authorName}
+                          className="h-9 w-9 rounded-full object-cover"
+                        />
+                      ) : (
+                        <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gold/20 text-sm font-bold text-gold">
+                          {review.authorName?.[0]?.toUpperCase() || 'C'}
+                        </div>
+                      )}
+                      <div>
+                        <p className="text-sm font-semibold text-[var(--text-primary)]">
+                          {review.authorName}
+                        </p>
+                        <p className="text-xs text-[var(--text-muted)]">
+                          Cliente verificado
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                ['Excelente servicio y atención al detalle',
+                 'Ambiente profesional y resultados increíbles',
+                 'Siempre vuelvo por la calidad del trabajo'
+                ].map((text) => (
+                  <div key={text}
+                    className="rounded-[32px] bg-[var(--bg-tertiary)] p-6">
+                    <div className="mb-3 flex gap-1">
+                      {[1,2,3,4,5].map(s => (
+                        <Star key={s} size={16}
+                          className="fill-gold text-gold" />
+                      ))}
+                    </div>
+                    <p className="text-sm text-[var(--text-secondary)]">
+                      "{text}"
+                    </p>
+                    <div className="mt-4 flex items-center gap-3">
+                      <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gold/20 text-sm font-bold text-gold">C</div>
+                      <p className="text-sm font-semibold text-[var(--text-primary)]">
+                        Cliente BERSULM
+                      </p>
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
           </div>
         </div>

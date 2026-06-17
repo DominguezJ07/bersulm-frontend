@@ -42,10 +42,32 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const isAuthenticated = Boolean(token)
 
+  // Configurar axios con el token guardado al montar
   useEffect(() => {
     const savedToken = localStorage.getItem(STORAGE_KEYS.TOKEN)
     if (savedToken) {
       setAuthToken(savedToken)
+    }
+  }, [])
+
+  // Conectar socket al montar si ya hay sesión activa
+  // Esto es CRÍTICO para que las notificaciones funcionen
+  // después de recargar la página sin hacer login de nuevo
+  useEffect(() => {
+    const savedToken = localStorage.getItem(STORAGE_KEYS.TOKEN)
+    const savedUser = localStorage.getItem(STORAGE_KEYS.USER)
+    if (savedToken && savedUser) {
+      try {
+        const userData = JSON.parse(savedUser)
+        const userId = userData._id || userData.id || ''
+        if (userId) {
+          import('@/lib/socket').then(({ connectSocket }) => {
+            connectSocket(savedToken, userId)
+          })
+        }
+      } catch {
+        // ignorar error de parse
+      }
     }
   }, [])
 
@@ -54,15 +76,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       const response = await authService.login(payload)
       const data = response?.data
-      const tokenValue = data?.token || (data as unknown as { accessToken?: string })?.accessToken
+      const tokenValue =
+        data?.token ||
+        (data as unknown as { accessToken?: string })?.accessToken
       const userData = data?.user
 
       if (!tokenValue || !userData) {
         throw new Error('Respuesta de login inválida')
       }
 
-      localStorage.setItem(STORAGE_KEYS.TOKEN, tokenValue)
-      localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(userData))
       const refreshToken = (data as { refreshToken?: string }).refreshToken
       if (refreshToken) {
         localStorage.setItem(STORAGE_KEYS.REFRESH_TOKEN, refreshToken)
@@ -71,6 +93,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setToken(tokenValue)
       setUser(userData)
       setAuthToken(tokenValue)
+
+      localStorage.setItem(STORAGE_KEYS.TOKEN, tokenValue)
+      localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(userData))
 
       const userId = userData._id || userData.id || ''
       const { connectSocket } = await import('@/lib/socket')
@@ -94,7 +119,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       await authService.register(payload)
     } catch (err: unknown) {
       const apiError = err as {
-        response?: { data?: { message?: string; error?: string; errors?: string[] } }
+        response?: {
+          data?: {
+            message?: string
+            error?: string
+            errors?: string[]
+          }
+        }
         message?: string
       }
       const msg =
@@ -110,16 +141,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [])
 
   const updateUser = useCallback((userData: Partial<User>) => {
-    setUser((prev) => (prev ? { ...prev, ...userData } : null))
-    const current = localStorage.getItem(STORAGE_KEYS.USER)
-    if (current) {
-      try {
-        const parsed = JSON.parse(current)
-        localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify({ ...parsed, ...userData }))
-      } catch {
-        // ignore
-      }
-    }
+    setUser((prev) => {
+      if (!prev) return null
+      const updated = { ...prev, ...userData }
+      localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(updated))
+      return updated
+    })
   }, [])
 
   const logout = useCallback(() => {
@@ -130,7 +157,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setToken(null)
     setUser(null)
     setAuthToken(null)
-    import('@/lib/socket').then(({ disconnectSocket }) => disconnectSocket())
+    import('@/lib/socket').then(({ disconnectSocket }) =>
+      disconnectSocket()
+    )
   }, [])
 
   const value = useMemo(
@@ -144,8 +173,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       logout,
       updateUser,
     }),
-    [user, token, isAuthenticated, isLoading, login, register, logout, updateUser],
+    [user, token, isAuthenticated, isLoading,
+     login, register, logout, updateUser],
   )
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
+  return (
+    <AuthContext.Provider value={value}>
+      {children}
+    </AuthContext.Provider>
+  )
 }

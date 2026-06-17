@@ -9,7 +9,7 @@ export function useServices() {
       const res = await servicesService.getAll()
       const data = res?.data ?? (res as unknown as { services: Service[] }).services
       const servicesList = Array.isArray(data) ? data : Array.isArray(res) ? res : []
-      return servicesList
+      return servicesList.filter(s => s.isActive !== false)
     },
   })
 }

@@ -47,6 +47,7 @@ export function useRewardsFlow() {
   })
   const [isLoading, setIsLoading] = useState(true)
   const [isSpinLoading, setIsSpinLoading] = useState(false)
+  const [votePercentages, setVotePercentages] = useState<Map<string, number>>(new Map())
 
   const isAdmin = Boolean(user?.role === 'admin' || user?.isAdmin)
   const isLastDayOfMonth = useMemo(
@@ -60,13 +61,19 @@ export function useRewardsFlow() {
   )
 
   const wheelRewardsData = useMemo(() => {
-    return rewards.map((r) => ({
-      id: r._id || r.id || '',
-      name: r.name || r.label || r.title || 'Premio',
-      votes: Number(r.votes) || Number(r.voteCount) || 0,
-      pct: totalVotes > 0 ? Math.round(((Number(r.votes) || Number(r.voteCount) || 0) / totalVotes) * 100) : 0,
-    }))
-  }, [rewards, totalVotes])
+    return rewards.map((r) => {
+      const rewardId = String(r._id || r.id || '')
+      const votes = Number(r.votes) || Number(r.voteCount) || 0
+      const pct = votePercentages.get(rewardId)
+        ?? (totalVotes > 0 ? Math.round((votes / totalVotes) * 100) : 0)
+      return {
+        id: rewardId,
+        name: r.name || r.label || r.title || 'Premio',
+        votes,
+        pct,
+      }
+    })
+  }, [rewards, totalVotes, votePercentages])
 
   const currentPrize = useMemo(() => {
     if (wheelRewardsData.length === 0) return ''
@@ -115,29 +122,49 @@ export function useRewardsFlow() {
       const rewardsData = (rewardsRes.data as Reward[]) || []
       setRewards(rewardsData)
 
-      if (token && raffleData) {
-        const votesRes = await rewardsService.getVotes()
-        const allVotes = (votesRes.data as VoteEntry[]) || []
-        const voteCounts = normalizeVotes(allVotes)
+      // Los votos agregados ya vienen en la respuesta de getCurrentRaffle
+      // en el campo data.votes con { rewardId, name, count, percentage }
+      const aggregatedVotes = (raffleRes.data as {
+        votes?: Array<{
+          rewardId: string
+          name: string
+          count: number
+          percentage: number
+        }>
+        userHasVoted?: boolean
+      })
+
+      if (aggregatedVotes.votes && aggregatedVotes.votes.length > 0) {
+        // Crear mapa de rewardId → { count, percentage }
+        const voteMap = new Map(
+          aggregatedVotes.votes.map(v => [v.rewardId, v])
+        )
 
         setRewards((prev) =>
-          prev.map((r) => ({
-            ...r,
-            votes: voteCounts[String(r._id || r.id)] ?? (Number(r.votes) || Number(r.voteCount) || 0),
-          })),
+          prev.map((r) => {
+            const rewardId = String(r._id || r.id || '')
+            const voteData = voteMap.get(rewardId)
+            return {
+              ...r,
+              votes: voteData?.count ?? 0,
+              voteCount: voteData?.count ?? 0,
+            }
+          })
         )
 
-        const userIdLocal = user?._id || user?.id
-        const myVote = allVotes.find(
-          (v) => String(v.userId || v.user_id) === String(userIdLocal),
+        const percentageMap = new Map(
+          aggregatedVotes.votes.map(v => [v.rewardId, v.percentage])
         )
-        if (myVote && !loadCachedVote()) {
-          const detectedId = String(myVote.rewardId || myVote.reward)
-          saveCachedVote(detectedId)
-        }
-        if (myVote) {
+        setVotePercentages(percentageMap)
+      }
+
+      // userHasVoted ya viene de getCurrentRaffle
+      if (aggregatedVotes.userHasVoted !== undefined) {
+        if (aggregatedVotes.userHasVoted) {
           setUserHasVoted(true)
-          setVotedRewardId(String(myVote.rewardId || myVote.reward))
+          // El votedRewardId se mantiene desde localStorage
+          const cached = loadCachedVote()
+          if (cached) setVotedRewardId(cached.rewardId)
         } else {
           clearCachedVote()
           setUserHasVoted(false)
@@ -149,7 +176,7 @@ export function useRewardsFlow() {
     } finally {
       setIsLoading(false)
     }
-  }, [token, normalizeVotes])
+  }, [])
 
   useEffect(() => {
     loadRaffle()

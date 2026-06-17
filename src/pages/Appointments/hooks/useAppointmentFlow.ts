@@ -6,6 +6,23 @@ import { appointmentsService } from '@/services/appointments.service'
 import { formatISODate } from '@/lib/format'
 import type { Service, TimeSlot } from '@/types'
 
+function generateAllSlots(): string[] {
+  const slots: string[] = []
+  let hour = 9
+  let min = 0
+  while (hour < 18 || (hour === 18 && min <= 30)) {
+    slots.push(
+      `${hour.toString().padStart(2, '0')}:${min.toString().padStart(2, '0')}`
+    )
+    min += 30
+    if (min === 60) {
+      hour++
+      min = 0
+    }
+  }
+  return slots
+}
+
 export function useAppointmentFlow() {
   const navigate = useNavigate()
   const location = useLocation()
@@ -48,16 +65,20 @@ export function useAppointmentFlow() {
         const res = await appointmentsService.getAvailableSlots(date)
         const raw = res.data
         if (!mounted) return
-        const normalized = Array.isArray(raw)
-          ? raw.map((s) => {
-              if (typeof s === 'string') return { time: s, available: true }
-              return {
-                time: s.time || s.slot || '',
-                available: s.available !== false,
-              }
-            })
-          : []
-        setSlots(normalized)
+        // Slots disponibles que retorna el backend
+        const availableTimes = new Set(
+          Array.isArray(raw)
+            ? raw.map((s) => (typeof s === 'string' ? s : s.time || s.slot || ''))
+            : []
+        )
+
+        // Generar TODOS los slots del día y marcar disponibilidad
+        const allSlots = generateAllSlots().map((time) => ({
+          time,
+          available: availableTimes.has(time),
+        }))
+
+        setSlots(allSlots)
       } catch {
         if (mounted) setRequestError('Error cargando horarios')
       } finally {

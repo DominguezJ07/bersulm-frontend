@@ -1,8 +1,13 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Helmet } from 'react-helmet-async'
-import { Scissors, Clock } from 'lucide-react'
+import { useQuery } from '@tanstack/react-query'
+import { Scissors, Clock, Plus, Edit2, EyeOff, Eye } from 'lucide-react'
 import { useServices } from '@/hooks/useServices'
+import { useAuth } from '@/hooks/useAuth'
+import { servicesService } from '@/services/services.service'
+import { useServicesAdmin } from './hooks/useServicesAdmin'
+import { ServiceFormModal } from './components/ServiceFormModal'
 import type { Service } from '@/types'
 
 const categories = [
@@ -28,10 +33,26 @@ export default function Services() {
   const { data: services = [], isLoading, error } = useServices()
   const navigate = useNavigate()
 
+  const { user } = useAuth()
+  const isAdmin = user?.role === 'admin'
+  const admin = useServicesAdmin()
+
+  const { data: allServices = [] } = useQuery<Service[]>({
+    queryKey: ['services', 'all'],
+    queryFn: async () => {
+      const res = await servicesService.getAll()
+      const data = res?.data ?? (res as unknown as { services: Service[] }).services
+      return Array.isArray(data) ? data : []
+    },
+    enabled: isAdmin,
+  })
+
+  const displayServices = isAdmin ? allServices : services
+
   const filteredServices =
     activeFilter === 'todos'
-      ? services
-      : services.filter((s) => s.category === activeFilter)
+      ? displayServices
+      : displayServices.filter((s) => s.category === activeFilter)
 
   return (
     <>
@@ -47,6 +68,17 @@ export default function Services() {
           <p className="mt-4 max-w-2xl text-lg text-gold">
             Elige el servicio perfecto para tu estilo y disfruta de una experiencia premium en BERSULM.
           </p>
+          {isAdmin && (
+            <button
+              onClick={admin.openCreate}
+              className="mt-6 flex items-center gap-2 rounded-full
+                bg-gold px-6 py-3 text-sm font-semibold
+                text-surface-dark transition hover:brightness-110"
+            >
+              <Plus size={16} />
+              Nuevo Servicio
+            </button>
+          )}
         </header>
 
         <div className="flex flex-wrap gap-3">
@@ -96,6 +128,12 @@ export default function Services() {
                   <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-[var(--bg-card)] text-gold">
                     <Scissors size={28} />
                   </div>
+                  {!service.isActive && (
+                    <span className="rounded-full bg-red-500/15 px-2 py-1
+                      text-xs font-semibold text-red-400 absolute top-6 right-6">
+                      Inactivo
+                    </span>
+                  )}
                   <h2 className="mt-6 text-2xl font-semibold text-[var(--text-primary)]">
                     {service.name}
                   </h2>
@@ -110,6 +148,7 @@ export default function Services() {
 
                   <div className="mt-6 flex items-end justify-between gap-4">
                     <span className="text-3xl font-bold text-gold">{formatPrice(service)}</span>
+                    {!isAdmin && (
                     <button
                       type="button"
                       onClick={() =>
@@ -119,12 +158,60 @@ export default function Services() {
                     >
                       Reservar
                     </button>
+                    )}
                   </div>
+
+                  {isAdmin && (
+                    <div className="mt-4 flex gap-2 border-t
+                      border-[var(--border-color)] pt-4">
+                      <button
+                        onClick={() => admin.openEdit(service)}
+                        className="flex flex-1 items-center justify-center
+                          gap-2 rounded-xl border border-[var(--border-color)]
+                          bg-[var(--bg-card)] py-2 text-xs font-semibold
+                          text-[var(--text-secondary)] transition
+                          hover:border-gold hover:text-gold"
+                      >
+                        <Edit2 size={14} />
+                        Editar
+                      </button>
+                      <button
+                        onClick={() => admin.handleToggleActive(service)}
+                        disabled={admin.togglingId === (service._id || service.id)}
+                        className={`flex flex-1 items-center justify-center
+                          gap-2 rounded-xl border py-2 text-xs font-semibold
+                          transition disabled:opacity-50 ${
+                            service.isActive
+                              ? 'border-red-500/20 bg-red-500/10 text-red-400 hover:bg-red-500/20'
+                              : 'border-green-500/20 bg-green-500/10 text-green-400 hover:bg-green-500/20'
+                          }`}
+                      >
+                        {admin.togglingId === (service._id || service.id) ? (
+                          <span className="h-3 w-3 animate-spin rounded-full
+                            border-2 border-t-current border-current/30" />
+                        ) : service.isActive ? (
+                          <><EyeOff size={14} /> Desactivar</>
+                        ) : (
+                          <><Eye size={14} /> Activar</>
+                        )}
+                      </button>
+                    </div>
+                  )}
                 </article>
               )
             })}
         </div>
       </div>
+
+      {isAdmin && (
+        <ServiceFormModal
+          isOpen={admin.isModalOpen}
+          editingService={admin.editingService}
+          isSubmitting={admin.isSubmitting}
+          onClose={admin.closeModal}
+          onSubmit={admin.handleSubmit}
+        />
+      )}
     </main>
     </>
   )

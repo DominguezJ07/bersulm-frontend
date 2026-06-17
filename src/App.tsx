@@ -1,10 +1,13 @@
-import { lazy, Suspense } from 'react'
+import { lazy, Suspense, useEffect } from 'react'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { HelmetProvider } from 'react-helmet-async'
+import toast from 'react-hot-toast'
 import { AuthProvider } from './context/AuthContext'
 import { Layout } from './components/layout'
 import { PrivateRoute } from './components/routes'
 import { ErrorBoundary } from './components/ui/ErrorBoundary'
+import { AppointmentNotifications } from './components/AppointmentNotifications'
+import { onForegroundMessage } from './lib/firebase'
 
 const Home = lazy(() => import('./pages/Home'))
 const Services = lazy(() => import('./pages/Services'))
@@ -26,11 +29,24 @@ function PageLoader() {
 }
 
 function App() {
+  useEffect(() => {
+    const unsubscribe = onForegroundMessage(({ title, body }) => {
+      if (title || body) {
+        toast(body || title || 'Nueva notificación', {
+          icon: '🔔',
+          duration: 5000,
+        })
+      }
+    })
+    return unsubscribe
+  }, [])
+
   return (
     <ErrorBoundary>
       <HelmetProvider>
         <BrowserRouter>
           <AuthProvider>
+            <AppointmentNotifications />
             <Suspense fallback={<PageLoader />}>
               <Routes>
                 <Route path="/login" element={<Login />} />

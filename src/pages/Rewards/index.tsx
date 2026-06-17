@@ -2,9 +2,10 @@ import { useState, useMemo, useEffect } from 'react'
 import { Helmet } from 'react-helmet-async'
 import { Sparkles, Gift } from 'lucide-react'
 import toast from 'react-hot-toast'
+import { useAuth } from '@/hooks/useAuth'
 import { useRewardsFlow } from './hooks/useRewardsFlow'
 import { useSorteosFlow } from '../Sorteos/hooks/useSorteosFlow'
-import { CountdownTimer, WheelSpinner, RewardCard } from './components'
+import { CountdownTimer, WheelSpinner, RewardCard, RaffleHistory, AdminRewardsPanel } from './components'
 import { CountdownBanner, VotingPhase, ActivePhase, CompletedPhase } from '../Sorteos/components'
 import { onSocketEvent } from '@/lib/socket'
 
@@ -156,6 +157,8 @@ function SorteosContent() {
 
 export default function Rewards() {
   const [activeTab, setActiveTab] = useState<'premios' | 'sorteos'>('premios')
+  const { user } = useAuth()
+  const isAdmin = user?.role === 'admin'
   const flow = useRewardsFlow()
 
   return (
@@ -240,6 +243,8 @@ export default function Rewards() {
 
       {activeTab === 'premios' && (
         <>
+          {isAdmin && <AdminRewardsPanel />}
+
           <section className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
             <CountdownTimer
               days={flow.remaining.days}
@@ -325,7 +330,12 @@ export default function Rewards() {
         </>
       )}
 
-      {activeTab === 'sorteos' && <SorteosContent />}
+      {activeTab === 'sorteos' && (
+        <>
+          <SorteosContent />
+          <RaffleHistory />
+        </>
+      )}
     </main>
   )
 }

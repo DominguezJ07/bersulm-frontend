@@ -1,6 +1,9 @@
 import { useState, useEffect } from 'react'
 import { NavLink } from 'react-router-dom'
-import { Home, Scissors, CalendarDays, Gift, Wallet, Settings, ChevronUp, X } from 'lucide-react'
+import { Home, Scissors, CalendarDays, Gift, Wallet, Settings, ChevronUp, X, Bell } from 'lucide-react'
+import { useAuth } from '@/hooks/useAuth'
+import { useAdminNotifications } from '@/hooks/useAdminNotifications'
+import { AdminNotificationsPanel } from '@/components/AdminNotificationsPanel'
 import { ROUTES } from '@/constants/routes'
 import logoBersulm from '@/assets/logo-bersulm.svg'
 
@@ -19,6 +22,12 @@ const moreTabs = [
 export function BottomNav() {
   const [moreOpen, setMoreOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
+
+  const { user } = useAuth()
+  const isAdmin = user?.role === 'admin'
+  const [showNotifications, setShowNotifications] =
+    useState(false)
+  const { unreadCount } = useAdminNotifications()
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20)
@@ -72,7 +81,36 @@ export function BottomNav() {
             </ul>
           </nav>
 
-          <div className="w-16" />
+          {isAdmin && (
+            <div className="relative">
+              <button
+                onClick={() =>
+                  setShowNotifications((prev) => !prev)}
+                className="relative flex h-10 w-10 items-center
+                  justify-center rounded-full border
+                  border-[var(--border-color)]
+                  bg-[var(--bg-secondary)] text-[var(--text-secondary)]
+                  transition hover:border-gold hover:text-gold"
+              >
+                <Bell size={18} />
+                {unreadCount > 0 && (
+                  <span className="absolute -right-1 -top-1
+                    flex h-5 w-5 items-center justify-center
+                    rounded-full bg-gold text-xs font-bold
+                    text-surface-dark">
+                    {unreadCount > 9 ? '9+' : unreadCount}
+                  </span>
+                )}
+              </button>
+
+              <AdminNotificationsPanel
+                isOpen={showNotifications}
+                onClose={() => setShowNotifications(false)}
+              />
+            </div>
+          )}
+
+          {!isAdmin && <div className="w-16" />}
         </div>
       </div>
 

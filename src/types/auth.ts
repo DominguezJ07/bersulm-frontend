@@ -4,8 +4,9 @@ export interface User {
   name: string
   email: string
   phone?: string
-  role?: 'user' | 'admin'
+  role?: 'user' | 'admin' | 'client'
   isAdmin?: boolean
+  avatar?: string | null
 }
 
 export interface LoginPayload {

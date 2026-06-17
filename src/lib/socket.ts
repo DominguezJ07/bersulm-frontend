@@ -2,37 +2,48 @@ import { io, Socket } from 'socket.io-client'
 import toast from 'react-hot-toast'
 
 let socket: Socket | null = null
+let isConnecting = false
 
-type RaffleEventHandler = (data: {
-  raffleId: string
-  month: string
-  winnerReward?: string
-  winnerRewardName?: string
-  status?: string
-  phase?: string
-}) => void
-
-const listeners: Record<string, RaffleEventHandler[]> = {
+const listeners: Record<string, Function[]> = {
   'raffle:voting-ended': [],
   'raffle:winner': [],
   'raffle:you-won': [],
   'raffle:updated': [],
+  'appointment:created': [],
+  'appointment:confirmed': [],
+  'appointment:completed': [],
+  'appointment:cancelled': [],
+  'appointment:cancelled-by-admin': [],
 }
 
-function notify(event: string, data: Parameters<RaffleEventHandler>[0]) {
+function notify(event: string, data: unknown) {
   listeners[event]?.forEach((fn) => fn(data))
 }
 
 export function connectSocket(token: string, userId: string) {
-  if (socket?.connected) return
+  if (socket?.connected || isConnecting) return
+  isConnecting = true
 
-  socket = io(window.location.origin, {
+  if (socket) {
+    socket.disconnect()
+    socket = null
+  }
+
+  socket = io('http://localhost:3000', {
     auth: { token },
     transports: ['websocket', 'polling'],
+    reconnection: true,
+    reconnectionAttempts: 5,
+    reconnectionDelay: 1000,
   })
 
   socket.on('connect', () => {
+    isConnecting = false
     socket?.emit('join-user', userId)
+  })
+
+  socket.on('connect_error', () => {
+    isConnecting = false
   })
 
   socket.on('raffle:voting-ended', (data) => {
@@ -56,12 +67,33 @@ export function connectSocket(token: string, userId: string) {
     notify('raffle:updated', data)
   })
 
+  socket.on('appointment:created', (data) => {
+    notify('appointment:created', data)
+  })
+
+  socket.on('appointment:confirmed', (data) => {
+    notify('appointment:confirmed', data)
+  })
+
+  socket.on('appointment:completed', (data) => {
+    notify('appointment:completed', data)
+  })
+
+  socket.on('appointment:cancelled', (data) => {
+    notify('appointment:cancelled', data)
+  })
+
+  socket.on('appointment:cancelled-by-admin', (data) => {
+    notify('appointment:cancelled-by-admin', data)
+  })
+
   socket.on('disconnect', () => {
-    // auto-reconnect handled by socket.io
+    isConnecting = false
   })
 }
 
 export function disconnectSocket() {
+  isConnecting = false
   if (socket) {
     socket.disconnect()
     socket = null
@@ -71,11 +103,15 @@ export function disconnectSocket() {
   })
 }
 
-export function onSocketEvent(event: string, handler: RaffleEventHandler): () => void {
+export function onSocketEvent(
+  event: string,
+  handler: (data: unknown) => void
+): () => void {
   if (!listeners[event]) listeners[event] = []
   listeners[event].push(handler)
   return () => {
-    listeners[event] = listeners[event]?.filter((fn) => fn !== handler) ?? []
+    listeners[event] =
+      listeners[event]?.filter((fn) => fn !== handler) ?? []
   }
 }
 

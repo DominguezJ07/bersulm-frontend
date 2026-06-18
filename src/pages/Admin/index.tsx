@@ -10,6 +10,7 @@ import {
   XCircle, User
 } from 'lucide-react'
 import { ROUTES } from '@/constants/routes'
+import { GalleryManager } from './components'
 import api from '@/lib/api'
 
 interface AppointmentStats {
@@ -678,6 +679,11 @@ export default function AdminDashboard() {
           </div>
         )}
       </section>
+
+      {/* GALERÍA */}
+      <div className="mt-10">
+        <GalleryManager />
+      </div>
     </main>
   )
 }

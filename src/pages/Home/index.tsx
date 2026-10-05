@@ -5,8 +5,8 @@ import { CalendarDays, Scissors, Gift, Star, Plus, X, Upload, Link as LinkIcon }
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '@/hooks/useAuth'
 import { useServices } from '@/hooks/useServices'
-import { galleryService } from '@/services/gallery.service'
-import { reviewsService } from '@/services/reviews.service'
+import { useGallery } from '@/hooks/useGallery'
+import { useApprovedReviews } from '@/hooks/useReviews'
 import { ROUTES } from '@/constants/routes'
 import toast from 'react-hot-toast'
 import api from '@/lib/api'
@@ -351,17 +351,9 @@ export default function Home() {
 
   const { data: services, isLoading: servicesLoading } = useServices()
 
-  const { data: galleryData, isLoading: galleryLoading } = useQuery({
-    queryKey: ['gallery'],
-    queryFn: () => galleryService.getGallery(),
-    staleTime: 5 * 60 * 1000,
-  })
+  const { data: galleryData, isLoading: galleryLoading } = useGallery()
 
-  const { data: reviewsData } = useQuery({
-    queryKey: ['reviews-home'],
-    queryFn: () => reviewsService.getApproved({ limit: 6 }),
-    staleTime: 10 * 60 * 1000,
-  })
+  const { data: reviewsData } = useApprovedReviews(6)
 
   const reviews = (reviewsData as any)?.data?.reviews
     ?? (reviewsData as any)?.reviews
@@ -812,13 +804,13 @@ export default function Home() {
             backdropFilter: isLightMode ? 'blur(1px)' : 'none',
           }}
         />
-        <div className={`relative mx-auto flex min-h-[80vh] max-w-6xl flex-col items-center justify-center px-6 py-24 transition-opacity duration-500 ${mounted ? 'opacity-100' : 'opacity-0'}`}>
+        <div className={`relative mx-auto flex min-h-[80vh] max-w-[var(--container-max)] flex-col items-center justify-center px-6 py-24 transition-opacity duration-500 ${mounted ? 'opacity-100' : 'opacity-0'}`}>
           <p className="mb-4 text-sm uppercase tracking-[0.35em] text-gold">BERSULM</p>
           <h1
             className="max-w-3xl text-4xl font-semibold leading-tight sm:text-5xl md:text-6xl"
             style={{ color: isLightMode ? '#1a1a1a' : '#ffffff' }}
           >
-            Lo sublime va en el corazón del estilo masculino
+            Lo sublime va en el corazón 
           </h1>
           <p
             className="mt-6 max-w-2xl text-base sm:text-lg"
@@ -852,7 +844,7 @@ export default function Home() {
       </section>
 
       <section className="border-y border-gold bg-[var(--bg-secondary)] py-20">
-        <div className="mx-auto grid max-w-6xl grid-cols-1 gap-8 px-[var(--page-px)] sm:grid-cols-3">
+        <div className="mx-auto grid max-w-[var(--container-max)] grid-cols-1 gap-8 px-[var(--page-px)] sm:grid-cols-3">
           {stats.map((item) => (
             <div key={item.label} className="space-y-3 rounded-[32px] bg-[var(--bg-tertiary)] p-8 text-center shadow-xl shadow-black/10">
               <p className="text-5xl font-bold text-gold">{item.value}</p>
@@ -863,7 +855,7 @@ export default function Home() {
       </section>
 
       <section id="servicios-section" className="py-20">
-        <div className="mx-auto max-w-6xl px-6">
+        <div className="mx-auto max-w-[var(--container-max)] px-6">
           <div className="mb-10 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <p className="text-sm uppercase tracking-[0.35em] text-gold">Descubre</p>
@@ -915,7 +907,7 @@ export default function Home() {
       </section>
 
       <section className="bg-[var(--bg-secondary)] py-20">
-        <div className="mx-auto max-w-6xl px-6">
+        <div className="mx-auto max-w-[var(--container-max)] px-6">
           <div className="mb-10 text-center">
             <p className="text-sm uppercase tracking-[0.35em] text-gold">Galería</p>
             <h2 className="mt-3 text-3xl font-semibold">Nuestros estilos en acción</h2>
@@ -985,7 +977,7 @@ export default function Home() {
       </section>
 
       <section className="py-20">
-        <div className="mx-auto max-w-6xl px-6">
+        <div className="mx-auto max-w-[var(--container-max)] px-6">
           <div className="grid gap-8 lg:grid-cols-2">
             <div className="rounded-[32px] border border-[var(--border-color)] bg-[var(--bg-secondary)] p-10 shadow-xl shadow-black/5">
               <p className="text-sm uppercase tracking-[0.35em] text-gold">Clientes</p>
@@ -1065,7 +1057,7 @@ export default function Home() {
       </section>
 
       <section className="bg-[var(--bg-secondary)] py-20">
-        <div className="mx-auto max-w-6xl px-6 text-center">
+        <div className="mx-auto max-w-[var(--container-max)] px-6 text-center">
           <p className="text-sm uppercase tracking-[0.35em] text-gold">Listado de preguntas</p>
           <h2 className="mt-3 text-3xl font-semibold">Preguntas frecuentes</h2>
           <div className="mt-8 space-y-4">

@@ -13,6 +13,7 @@ const Home = lazy(() => import('./pages/Home'))
 const Services = lazy(() => import('./pages/Services'))
 const Appointments = lazy(() => import('./pages/Appointments'))
 const Rewards = lazy(() => import('./pages/Rewards'))
+const Sorteo = lazy(() => import('./pages/Sorteo'))
 const Loyalty = lazy(() => import('./pages/Loyalty'))
 const LoyaltyMinigame = lazy(() => import('./pages/Loyalty/Minigame'))
 const Settings = lazy(() => import('./pages/Settings'))
@@ -69,6 +70,8 @@ function App() {
 
                   <Route path="/premios" element={<Rewards />} />
                   <Route path="/rewards" element={<Navigate to="/premios" replace />} />
+
+                  <Route path="/sorteo" element={<Sorteo />} />
 
                   <Route
                     path="/fidelidad"

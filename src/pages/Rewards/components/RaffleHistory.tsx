@@ -1,19 +1,17 @@
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Trophy, Users, Calendar, Gift, ChevronLeft, ChevronRight } from 'lucide-react'
-import api from '@/lib/api'
+import { rewardsService } from '@/services/rewards.service'
 
 interface RaffleHistoryItem {
   _id: string
   month: string
   status: string
   raffleDate: string
-  winnerReward: {
-    _id: string
+  prize: {
     name: string
     description?: string
-    icon?: string
-    type?: string
+    images: string[]
   } | null
   winnerId: string | null
   participantCount: number
@@ -21,11 +19,24 @@ interface RaffleHistoryItem {
 }
 
 function formatMonth(monthStr: string): string {
-  const [year, month] = monthStr.split('-').map(Number)
+  const match = /^(\d{4})-(\d{1,2})$/.exec(monthStr)
+  if (!match) {
+    return monthStr
+  }
+
+  const year = Number(match[1])
+  const month = Number(match[2])
+  const date = new Date(year, month - 1, 1)
+
+  if (isNaN(date.getTime())) {
+    return monthStr
+  }
+
   return new Intl.DateTimeFormat('es-ES', {
     month: 'long',
     year: 'numeric',
-  }).format(new Date(year, month - 1, 1))
+  })
+    .format(date)
     .replace(/^./, (c) => c.toUpperCase())
 }
 
@@ -36,17 +47,15 @@ export function RaffleHistory() {
   const { data, isLoading, error } = useQuery({
     queryKey: ['raffle-history', page],
     queryFn: async () => {
-      const res = await api.get('/raffles/history', {
-        params: { page, limit: LIMIT }
-      })
-      return res.data.data
+      const res = await rewardsService.getHistory(page, LIMIT)
+      return res.data
     },
     staleTime: 5 * 60 * 1000,
   })
 
-  const raffles: RaffleHistoryItem[] = data?.raffles ?? []
-  const total: number = data?.total ?? 0
-  const totalPages: number = data?.totalPages ?? 1
+  const raffles: RaffleHistoryItem[] = (data as { raffles?: RaffleHistoryItem[] })?.raffles ?? []
+  const total: number = (data as { total?: number })?.total ?? 0
+  const totalPages: number = (data as { totalPages?: number })?.totalPages ?? 1
 
   return (
     <div className="mt-12 space-y-6">
@@ -147,15 +156,23 @@ export function RaffleHistory() {
                 </div>
 
                 {/* Premio ganador */}
-                {raffle.winnerReward ? (
+                {raffle.prize ? (
                   <div className="rounded-2xl bg-gold/5
                     border border-gold/15 p-4 mb-4">
                     <div className="flex items-center gap-3">
-                      <div className="flex h-12 w-12 shrink-0
-                        items-center justify-center rounded-xl
-                        bg-gold/15 text-2xl">
-                        {raffle.winnerReward.icon || '🎁'}
-                      </div>
+                      {raffle.prize.images?.[0] ? (
+                        <img
+                          src={raffle.prize.images[0]}
+                          alt={raffle.prize.name}
+                          className="h-12 w-12 shrink-0 rounded-xl border border-[var(--border-color)] object-cover"
+                        />
+                      ) : (
+                        <div className="flex h-12 w-12 shrink-0
+                          items-center justify-center rounded-xl
+                          bg-gold/15 text-2xl">
+                          🎁
+                        </div>
+                      )}
                       <div className="min-w-0">
                         <p className="text-xs uppercase
                           tracking-[0.15em] text-gold mb-1">
@@ -163,13 +180,13 @@ export function RaffleHistory() {
                         </p>
                         <p className="font-semibold
                           text-[var(--text-primary)] truncate">
-                          {raffle.winnerReward.name}
+                          {raffle.prize.name}
                         </p>
-                        {raffle.winnerReward.description && (
+                        {raffle.prize.description && (
                           <p className="text-xs
                             text-[var(--text-muted)] mt-0.5
                             line-clamp-1">
-                            {raffle.winnerReward.description}
+                            {raffle.prize.description}
                           </p>
                         )}
                       </div>

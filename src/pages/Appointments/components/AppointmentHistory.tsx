@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { useAppointments } from '@/hooks/useAppointments'
-import { appointmentsService } from '@/services/appointments.service'
+import { useCancelAppointment } from '@/hooks/useAppointmentActions'
 import toast from 'react-hot-toast'
 import {
   CalendarDays, Clock, Scissors, XCircle,
@@ -199,13 +199,12 @@ export function AppointmentHistory() {
   const [filter, setFilter] = useState<string>('all')
   const [cancellingAppointment, setCancellingAppointment] =
     useState<Appointment | null>(null)
-  const [isSubmitting, setIsSubmitting] = useState(false)
   const [reviewingAppointment, setReviewingAppointment] =
     useState<Appointment | null>(null)
 
+  const { cancelAppointment, isCancelling } = useCancelAppointment()
   const { appointments, isLoading, error, refetch } =
     useAppointments()
-  const queryClient = useQueryClient()
 
   const filters = [
     { key: 'all', label: 'Todas' },
@@ -228,16 +227,12 @@ export function AppointmentHistory() {
   const handleCancelConfirm = useCallback(
     async (reason: string) => {
       if (!cancellingAppointment) return
-      setIsSubmitting(true)
       try {
-        await appointmentsService.cancelAppointment(
-          cancellingAppointment._id,
-          reason
-        )
-        toast.success('Cita cancelada correctamente')
-        queryClient.invalidateQueries({
-          queryKey: ['appointments']
+        await cancelAppointment({
+          id: cancellingAppointment._id,
+          reason,
         })
+        toast.success('Cita cancelada correctamente')
         setCancellingAppointment(null)
       } catch (err: unknown) {
         const msg =
@@ -246,23 +241,21 @@ export function AppointmentHistory() {
           })?.response?.data?.message
           || 'No se pudo cancelar la cita'
         toast.error(msg)
-      } finally {
-        setIsSubmitting(false)
       }
     },
-    [cancellingAppointment, queryClient]
+    [cancellingAppointment, cancelAppointment]
   )
 
   const handleCancelClose = useCallback(() => {
-    if (!isSubmitting) setCancellingAppointment(null)
-  }, [isSubmitting])
+    if (!isCancelling) setCancellingAppointment(null)
+  }, [isCancelling])
 
   return (
     <>
       {cancellingAppointment && (
         <CancelModal
           appointment={cancellingAppointment}
-          isSubmitting={isSubmitting}
+          isSubmitting={isCancelling}
           onConfirm={handleCancelConfirm}
           onClose={handleCancelClose}
         />

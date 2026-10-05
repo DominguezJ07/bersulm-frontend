@@ -47,8 +47,9 @@ export function connectSocket(token: string, userId: string) {
   })
 
   socket.on('raffle:voting-ended', (data) => {
+    const prizeName = data.prize?.name || data.prizeName || data.winnerRewardName || data.winnerReward || '—'
     toast(
-      `El premio ganador del sorteo mensual es: ${data.winnerRewardName || data.winnerReward || '—'}`,
+      `El premio del sorteo mensual es: ${prizeName}`,
       { icon: '🎉', duration: 8000 },
     )
     notify('raffle:voting-ended', data)

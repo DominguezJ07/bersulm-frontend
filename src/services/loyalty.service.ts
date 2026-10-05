@@ -17,6 +17,11 @@ export const loyaltyService = {
     return response.data
   },
 
+  useReward: async (rewardId: string): Promise<ApiResponse<LoyaltyCard>> => {
+    const response = await api.post('/loyalty/claim', { rewardId })
+    return response.data
+  },
+
   searchUsers: async (q: string): Promise<ApiResponse<User[]>> => {
     const response = await api.get(`/auth/users/search?q=${encodeURIComponent(q)}`)
     return response.data

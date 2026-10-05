@@ -1,11 +1,9 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Helmet } from 'react-helmet-async'
-import { useQuery } from '@tanstack/react-query'
 import { Scissors, Clock, Plus, Edit2, EyeOff, Eye } from 'lucide-react'
 import { useServices } from '@/hooks/useServices'
 import { useAuth } from '@/hooks/useAuth'
-import { servicesService } from '@/services/services.service'
 import { useServicesAdmin } from './hooks/useServicesAdmin'
 import { ServiceFormModal } from './components/ServiceFormModal'
 import type { Service } from '@/types'
@@ -37,17 +35,7 @@ export default function Services() {
   const isAdmin = user?.role === 'admin'
   const admin = useServicesAdmin()
 
-  const { data: allServices = [] } = useQuery<Service[]>({
-    queryKey: ['services', 'all'],
-    queryFn: async () => {
-      const res = await servicesService.getAll()
-      const data = res?.data ?? (res as unknown as { services: Service[] }).services
-      return Array.isArray(data) ? data : []
-    },
-    enabled: isAdmin,
-  })
-
-  const displayServices = isAdmin ? allServices : services
+  const displayServices = isAdmin ? admin.allServices : services
 
   const filteredServices =
     activeFilter === 'todos'
@@ -61,7 +49,7 @@ export default function Services() {
         <meta name="description" content="Descubre nuestros servicios premium de barbería: cortes clásicos, modernos, barba, coloración y tratamientos capilares." />
       </Helmet>
       <main className="min-h-screen bg-[var(--bg-primary)] px-6 py-10 text-[var(--text-primary)] sm:px-8">
-      <div className="mx-auto max-w-7xl">
+      <div className="mx-auto max-w-[var(--container-max)]">
         <header className="mb-10">
           <p className="text-sm uppercase tracking-[0.35em] text-gold">Servicios</p>
           <h1 className="mt-4 text-4xl font-semibold sm:text-5xl">Nuestros Servicios</h1>

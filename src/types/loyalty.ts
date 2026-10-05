@@ -1,3 +1,10 @@
+export interface ClaimedReward {
+  rewardId: string
+  rewardName: string
+  claimedAt: string
+  usedAt: string | null
+}
+
 export interface LoyaltyCard {
   _id: string
   userId: string
@@ -7,6 +14,7 @@ export interface LoyaltyCard {
   currentCycle: number
   rewardId: string | null
   rewardWon: string | null
+  claimedRewards: ClaimedReward[]
   minigameCards: number[] | null
 }
 

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { NavLink } from 'react-router-dom'
-import { Home, Scissors, CalendarDays, Gift, Wallet, Settings, ChevronUp, X, Bell } from 'lucide-react'
+import { Home, Scissors, CalendarDays, Gift, Trophy, Wallet, Settings, ChevronUp, X, Bell } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 import { useAdminNotifications } from '@/hooks/useAdminNotifications'
 import { AdminNotificationsPanel } from '@/components/AdminNotificationsPanel'
@@ -12,6 +12,7 @@ const mainTabs = [
   { label: 'Servicios', path: ROUTES.SERVICES, Icon: Scissors },
   { label: 'Reservas', path: ROUTES.RESERVAS, Icon: CalendarDays },
   { label: 'Premios', path: ROUTES.REWARDS, Icon: Gift },
+  { label: 'Sorteo', path: ROUTES.SORTEO, Icon: Trophy },
 ]
 
 const moreTabs = [
@@ -52,7 +53,7 @@ export function BottomNav() {
     >
       {/* Desktop header */}
       <div className="hidden border-b border-[var(--border-color)] bg-surface-dark/95 backdrop-blur-md md:flex">
-        <div className="mx-auto flex w-full max-w-[1580px] items-center justify-between px-[var(--page-px)] py-4">
+        <div className="mx-auto flex w-full max-w-[var(--container-max)] items-center justify-between px-[var(--page-px)] py-4">
           <NavLink to={ROUTES.HOME} className="flex items-center gap-3 text-base uppercase tracking-[0.35em] text-gold">
             <div className="relative flex h-12 w-12 items-center justify-center overflow-hidden rounded-full border border-gold bg-surface-dark">
               <img src={logoBersulm} alt="BERSULM" className="h-full w-full object-cover" />

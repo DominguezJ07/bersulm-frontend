@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Star, X, CheckCircle } from 'lucide-react'
-import { reviewsService } from '@/services/reviews.service'
+import { useCreateReview } from '@/hooks/useReviews'
 import toast from 'react-hot-toast'
 
 interface PostCompletionReviewModalProps {
@@ -21,8 +21,9 @@ export function PostCompletionReviewModal({
   const [rating, setRating] = useState(0)
   const [hovered, setHovered] = useState(0)
   const [comment, setComment] = useState('')
-  const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitted, setSubmitted] = useState(false)
+
+  const { createReview, isSubmitting } = useCreateReview()
 
   const handleSubmit = async () => {
     if (rating === 0) {
@@ -34,9 +35,8 @@ export function PostCompletionReviewModal({
       return
     }
 
-    setIsSubmitting(true)
     try {
-      await reviewsService.create({
+      await createReview({
         appointmentId,
         rating,
         comment: comment.trim(),
@@ -48,8 +48,6 @@ export function PostCompletionReviewModal({
           ?.response?.data?.message
         || 'Error al enviar la reseña'
       toast.error(msg)
-    } finally {
-      setIsSubmitting(false)
     }
   }
 

@@ -1,11 +1,10 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Award, Gift } from 'lucide-react'
 import toast from 'react-hot-toast'
+import { Award, Gift } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
+import { useLoyaltyCard, useUseReward } from '@/hooks/useLoyalty'
 import { Card } from '@/components/ui'
-import { loyaltyService } from '@/services/loyalty.service'
-import type { LoyaltyCard } from '@/types'
 import { ROUTES } from '@/constants/routes'
 import { useLoyaltyAdmin } from './hooks/useLoyaltyAdmin'
 import { AdminLoyaltyPanel } from './components/AdminLoyaltyPanel'
@@ -58,34 +57,24 @@ export default function Loyalty() {
   const isAdmin = Boolean(authUser?.role === 'admin' || (authUser as { isAdmin?: boolean })?.isAdmin)
 
   const [isFlipped, setIsFlipped] = useState(false)
-  const [card, setCard] = useState<LoyaltyCard | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
+
+  const { data: card, isLoading } = useLoyaltyCard()
+  const { mutateAsync: useReward, isPending: isUsingReward } = useUseReward()
 
   const visitsCompleted = card?.visits ?? 0
   const isRewardPending = card?.status === 'reward_pending'
   const isRewardClaimed = card?.status === 'reward_claimed'
 
-  useEffect(() => {
-    if (!token || isAdmin) {
-      setIsLoading(false)
-      return
+  const handleUseReward = async (rewardId: string, rewardName: string) => {
+    const confirmed = window.confirm(`¿Usar el premio "${rewardName}"?`)
+    if (!confirmed) return
+    try {
+      await useReward(rewardId)
+      toast.success(`¡Premio "${rewardName}" usado con éxito!`)
+    } catch {
+      toast.error('No se pudo usar el premio. Intenta de nuevo.')
     }
-
-    const loadCard = async () => {
-      try {
-        const response = await loyaltyService.getCard()
-        const raw = response as unknown as Record<string, unknown> | null
-        const data = raw?.data ?? response
-        setCard((data as LoyaltyCard) ?? null)
-      } catch {
-        toast.error('No se pudo cargar tu tarjeta de fidelidad')
-      } finally {
-        setIsLoading(false)
-      }
-    }
-
-    loadCard()
-  }, [token, isAdmin])
+  }
 
   if (isAdmin) return <AdminView />
 
@@ -229,24 +218,83 @@ export default function Loyalty() {
             </section>
           )}
 
-          {isRewardClaimed && card.rewardWon && (
+          {card.claimedRewards.length > 0 && (
+            <section className="mb-12">
+              <div className="mx-auto max-w-md">
+                <div className="mb-4 text-center">
+                  <h2 className="text-xl font-bold text-[var(--text-primary)]">Mis Premios</h2>
+                  <p className="text-sm text-[var(--text-secondary)]">
+                    Canjea tus premios ganados cuando quieras
+                  </p>
+                </div>
+                <div className="space-y-3">
+                  {card.claimedRewards.map((reward, i) => {
+                    const used = Boolean(reward.usedAt)
+                    return (
+                      <Card
+                        key={`${reward.rewardId}-${i}`}
+                        className={`border p-4 transition-all ${
+                          used
+                            ? 'border-[var(--border-color)] opacity-60'
+                            : 'border-gold/30 shadow-lg shadow-gold/10'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between gap-3">
+                          <div className="flex min-w-0 items-center gap-3">
+                            <div
+                              className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${
+                                used ? 'bg-gray-500/20' : 'bg-gold text-surface-dark'
+                              }`}
+                            >
+                              <Award size={20} />
+                            </div>
+                            <div className="min-w-0">
+                              <p
+                                className={`truncate font-semibold ${
+                                  used
+                                    ? 'text-[var(--text-muted)]'
+                                    : 'text-[var(--text-primary)]'
+                                }`}
+                              >
+                                {reward.rewardName}
+                              </p>
+                              <p className="text-xs text-[var(--text-muted)]">
+                                {new Date(reward.claimedAt).toLocaleDateString()}
+                              </p>
+                            </div>
+                          </div>
+                          {used ? (
+                            <span className="shrink-0 rounded-full bg-gray-500/20 px-3 py-1 text-xs font-semibold text-[var(--text-muted)]">
+                              Usado
+                            </span>
+                          ) : (
+                            <button
+                              onClick={() => handleUseReward(reward.rewardId, reward.rewardName)}
+                              disabled={isUsingReward}
+                              className="shrink-0 rounded-lg bg-gold px-4 py-2 text-sm font-bold text-surface-dark transition-all hover:brightness-110 active:scale-95 disabled:opacity-60"
+                            >
+                              {isUsingReward ? 'Usando...' : 'Usar premio'}
+                            </button>
+                          )}
+                        </div>
+                      </Card>
+                    )
+                  })}
+                </div>
+              </div>
+            </section>
+          )}
+
+          {isRewardClaimed && !card.rewardWon && card.claimedRewards.length === 0 && (
             <section className="mb-12">
               <div className="mx-auto max-w-md rounded-2xl border border-gold/30 bg-[var(--bg-card)] p-6 text-center shadow-lg">
                 <Award size={36} className="mx-auto mb-3 text-gold" />
                 <h2 className="mb-2 text-xl font-bold text-[var(--text-primary)]">
-                  Premio Reclamado
+                  No hay premios pendientes
                 </h2>
-                <p className="mb-1 text-lg font-semibold text-gold">
-                  {card.rewardWon}
-                </p>
                 <p className="text-sm text-[var(--text-secondary)]">
-                  ¡Disfruta tu premio en tu próxima visita!
+                  Completa 5 visitas para ganar un nuevo premio.
                 </p>
-                {card.currentCycle > 0 && (
-                  <p className="mt-3 text-xs text-[var(--text-muted)]">
-                    Ciclo actual: {card.currentCycle}
-                  </p>
-                )}
               </div>
             </section>
           )}

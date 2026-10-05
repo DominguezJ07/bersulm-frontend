@@ -1,7 +1,9 @@
 import { useEffect, useState, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useQueryClient } from '@tanstack/react-query'
 import { Helmet } from 'react-helmet-async'
 import { Gift, Award, ArrowLeft, Sparkles } from 'lucide-react'
+import { useAuth } from '@/hooks/useAuth'
 import { loyaltyService } from '@/services/loyalty.service'
 import type { MinigameState, MinigameRevealResult } from '@/types'
 import { ROUTES } from '@/constants/routes'
@@ -21,6 +23,9 @@ const CONFETTI_COUNT = 40
 
 export default function LoyaltyMinigame() {
   const navigate = useNavigate()
+  const queryClient = useQueryClient()
+  const { user } = useAuth()
+  const userId = user?._id
   const [phase, setPhase] = useState<GamePhase>('loading')
   const [error, setError] = useState('')
   const [minigame, setMinigame] = useState<MinigameState | null>(null)
@@ -77,6 +82,7 @@ export default function LoyaltyMinigame() {
         const response = await loyaltyService.revealCard(cardIndex)
         const data = response.data
         setResult(data)
+        queryClient.invalidateQueries({ queryKey: ['loyalty', 'card', userId] })
 
         setCards((prev) =>
           prev.map((c) =>
@@ -114,11 +120,15 @@ export default function LoyaltyMinigame() {
         setPhase('playing')
       }
     },
-    [phase, cards],
+    [phase, cards, queryClient, userId],
   )
 
-  const rewardName =
-    minigame?.availableRewards?.[0]?.name || 'un premio sorpresa'
+  const availableRewards = minigame?.availableRewards ?? []
+  const rewardNames = availableRewards.map((r) => r.name)
+  const rewardLabel =
+    rewardNames.length > 0
+      ? rewardNames.slice(0, 3).join(', ').replace(/, ([^,]*)$/, ' o $1')
+      : 'un premio sorpresa'
 
   if (phase === 'loading') {
     return (
@@ -268,7 +278,7 @@ export default function LoyaltyMinigame() {
           <Gift size={18} className="text-gold" />
           <span className="text-sm text-[var(--text-secondary)]">
             Puedes ganar:{' '}
-            <span className="font-semibold text-gold">{rewardName}</span>
+            <span className="font-semibold text-gold">{rewardLabel}</span>
           </span>
         </div>
       </div>

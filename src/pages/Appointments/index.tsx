@@ -28,7 +28,7 @@ export default function Appointments() {
         <Helmet>
           <title>Gestión de Citas | BERSULM</title>
         </Helmet>
-        <div className="mx-auto max-w-5xl">
+        <div className="mx-auto max-w-[var(--container-max)]">
           <header className="mb-10">
             <p className="text-sm uppercase tracking-[0.35em]
               text-gold">
@@ -75,7 +75,7 @@ export default function Appointments() {
         <meta name="description" content="Reserva tu cita en
           BERSULM en 3 pasos." />
       </Helmet>
-      <div className="mx-auto max-w-7xl">
+      <div className="mx-auto max-w-[var(--container-max)]">
         <header className="mb-10">
           <p className="text-sm uppercase tracking-[0.35em]
             text-gold">

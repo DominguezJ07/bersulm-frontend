@@ -335,43 +335,16 @@ export default function AdminDashboard() {
             <div className="space-y-4">
               <span className={`rounded-full px-3 py-1
                 text-xs font-semibold ${
-                  raffle.phase === 'voting'
-                    ? 'bg-blue-400/15 text-blue-400'
-                    : raffle.phase === 'active'
-                      ? 'bg-amber-400/15 text-amber-400'
-                      : 'bg-green-400/15 text-green-400'
+                  raffle.phase === 'active'
+                    ? 'bg-amber-400/15 text-amber-400'
+                    : 'bg-green-400/15 text-green-400'
                 }`}>
-                {raffle.phase === 'voting'
-                  ? 'Votación activa'
-                  : raffle.phase === 'active'
-                    ? 'Sorteo activo'
-                    : 'Completado'}
+                {raffle.phase === 'active'
+                  ? 'Sorteo activo'
+                  : 'Completado'}
               </span>
 
-              {raffle.phase === 'voting' &&
-                raffle.votes?.slice(0, 3).map((vote: any) => (
-                  <div key={vote.rewardId}>
-                    <div className="mb-1 flex justify-between
-                      text-sm">
-                      <span>{vote.rewardName || vote.name}</span>
-                      <span className="text-[var(--text-secondary)]">
-                        {vote.voteCount || vote.count || 0} votos
-                      </span>
-                    </div>
-                    <div className="h-2 overflow-hidden
-                      rounded-full bg-[var(--bg-tertiary)]">
-                      <div
-                        className="h-full rounded-full bg-gold
-                          transition-all duration-500"
-                        style={{ width: `${vote.percentage ?? 0}%` }}
-                      />
-                    </div>
-                  </div>
-                ))}
-
-              {(raffle.phase === 'active' ||
-                raffle.phase === 'completed') &&
-                raffle.winnerReward && (
+              {raffle.prize && (
                 <div className="rounded-2xl border
                   border-gold/20 bg-gold/5 p-4">
                   <p className="text-xs uppercase
@@ -379,8 +352,13 @@ export default function AdminDashboard() {
                     Premio del mes
                   </p>
                   <p className="font-semibold">
-                    {raffle.winnerReward.name}
+                    {raffle.prize.name}
                   </p>
+                  {raffle.prize.description && (
+                    <p className="mt-1 text-xs text-[var(--text-secondary)]">
+                      {raffle.prize.description}
+                    </p>
+                  )}
                 </div>
               )}
 

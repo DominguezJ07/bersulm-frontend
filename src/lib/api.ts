@@ -28,10 +28,17 @@ api.interceptors.request.use(
   (error) => Promise.reject(error),
 )
 
+const AUTH_ENDPOINTS_NO_REDIRECT = ['/auth/login', '/auth/register']
+
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error?.response?.status === 401) {
+    const requestUrl: string = error?.config?.url || ''
+    const isAuthEndpoint = AUTH_ENDPOINTS_NO_REDIRECT.some((path) =>
+      requestUrl.includes(path)
+    )
+
+    if (error?.response?.status === 401 && !isAuthEndpoint) {
       authToken = null
       window.location.href = '/login'
     }

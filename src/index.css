@@ -21,6 +21,7 @@
   --border-color: rgba(245, 166, 35, 0.2);
   --accent: #f5a623;
   --page-px: clamp(1rem, 5vw, 4rem);
+  --container-max: 1400px;
 }
 
 html.light-mode {

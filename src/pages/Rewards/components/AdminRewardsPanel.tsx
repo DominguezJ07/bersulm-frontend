@@ -52,7 +52,7 @@ export function AdminRewardsPanel() {
             </p>
             <h2 className="mt-1 text-xl font-semibold
               text-[var(--text-primary)]">
-              Gestión de Premios
+              Gestión de Premios de Fidelidad
               {rewards.length > 0 && (
                 <span className="ml-2 text-sm font-normal
                   text-[var(--text-secondary)]">

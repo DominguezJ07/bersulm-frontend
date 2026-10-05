@@ -1,4 +1,5 @@
 import { createContext, useEffect, useMemo, useState, useCallback } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import { authService } from '@/services/auth.service'
 import { setAuthToken } from '@/lib/api'
 import { STORAGE_KEYS } from '@/constants/storage'
@@ -27,6 +28,7 @@ export const AuthContext = createContext<AuthContextValue>({
 })
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const queryClient = useQueryClient()
   const [user, setUser] = useState<User | null>(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEYS.USER)
@@ -150,6 +152,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [])
 
   const logout = useCallback(() => {
+    queryClient.clear()
     localStorage.removeItem(STORAGE_KEYS.TOKEN)
     localStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN)
     localStorage.removeItem(STORAGE_KEYS.USER)
@@ -160,7 +163,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     import('@/lib/socket').then(({ disconnectSocket }) =>
       disconnectSocket()
     )
-  }, [])
+  }, [queryClient])
 
   const value = useMemo(
     () => ({

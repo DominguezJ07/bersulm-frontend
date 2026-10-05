@@ -1,28 +1,44 @@
 import api from '@/lib/api'
-import type { Reward, Raffle, VoteEntry, ApiResponse, SorteoCurrentData, Participant } from '@/types'
+import type { Reward, Raffle, ApiResponse, SorteoCurrentData, Participant } from '@/types'
 
 export const rewardsService = {
   getCurrentRaffle: async (): Promise<ApiResponse<SorteoCurrentData>> => {
     const response = await api.get('/raffles/current')
     return response.data
   },
+  getHistory: async (page: number, limit: number): Promise<ApiResponse<unknown>> => {
+    const response = await api.get('/raffles/history', { params: { page, limit } })
+    return response.data
+  },
+  getAllRaffles: async (page = 1, limit = 20): Promise<ApiResponse<{ raffles: Raffle[]; total: number; totalPages: number }>> => {
+    const response = await api.get('/raffles/admin/all', { params: { page, limit } })
+    return response.data
+  },
+  updatePrize: async (raffleId: string, formData: FormData): Promise<ApiResponse<Raffle>> => {
+    const response = await api.put(`/raffles/${raffleId}/prize`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    })
+    return response.data
+  },
+  deleteRaffle: async (raffleId: string): Promise<void> => {
+    await api.delete(`/raffles/${raffleId}`)
+  },
   getRewards: async (): Promise<ApiResponse<Reward[]>> => {
     const response = await api.get('/rewards')
     return response.data
   },
-  getVotes: async (): Promise<ApiResponse<VoteEntry[]>> => {
-    const response = await api.get('/raffles/votes')
-    return response.data
-  },
-  vote: async (
-    rewardId: string,
-    raffleId: string,
-  ): Promise<ApiResponse<unknown>> => {
-    const response = await api.post('/raffles/vote', { rewardId, raffleId })
+  createPrize: async (formData: FormData): Promise<ApiResponse<Raffle>> => {
+    const response = await api.post('/raffles/create-monthly', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    })
     return response.data
   },
   spin: async (raffleId: string): Promise<ApiResponse<{ winner: string }>> => {
     const response = await api.post('/raffles/spin', { raffleId })
+    return response.data
+  },
+  closeMonth: async (): Promise<ApiResponse<unknown>> => {
+    const response = await api.post('/raffles/close-month')
     return response.data
   },
   getParticipants: async (raffleId: string): Promise<ApiResponse<Participant[]>> => {
@@ -35,6 +51,11 @@ export const rewardsService = {
   },
   removeParticipant: async (raffleId: string, participantId: string): Promise<ApiResponse<unknown>> => {
     const response = await api.delete(`/raffles/participants/${raffleId}/${participantId}`)
+    return response.data
+  },
+
+  updateDeadline: async (raffleId: string, durationMinutes: number): Promise<ApiResponse<unknown>> => {
+    const response = await api.patch(`/raffles/${raffleId}/deadline`, { durationMinutes })
     return response.data
   },
 }

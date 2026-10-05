@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react'
-import { useQueryClient } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { servicesService } from '@/services/services.service'
 import toast from 'react-hot-toast'
 import type { Service } from '@/types'
@@ -91,11 +91,21 @@ export function useServicesAdmin() {
     [invalidateServices]
   )
 
+  const { data: allServicesRaw = [] } = useQuery<Service[]>({
+    queryKey: ['services', 'all'],
+    queryFn: async () => {
+      const res = await servicesService.getAll()
+      const data = res?.data ?? (res as unknown as { services: Service[] }).services
+      return Array.isArray(data) ? data : []
+    },
+  })
+
   return {
     isModalOpen,
     editingService,
     isSubmitting,
     togglingId,
+    allServices: allServicesRaw,
     openCreate,
     openEdit,
     closeModal,

@@ -1,12 +1,5 @@
-import { ChevronDown, Sparkles, Gift } from 'lucide-react'
+import { ChevronDown, Sparkles } from 'lucide-react'
 import { Card } from '@/components/ui'
-
-interface RewardSegment {
-  id: string
-  name: string
-  votes: number
-  pct: number
-}
 
 interface WheelSpinnerProps {
   participants: string[]
@@ -19,8 +12,6 @@ interface WheelSpinnerProps {
   isLastDay: boolean
   isSpinLoading: boolean
   onStartDraw: () => void
-  wheelMode: 'rewards' | 'participants'
-  rewardsData: RewardSegment[]
   currentPrize: string
 }
 
@@ -35,14 +26,12 @@ export function WheelSpinner({
   isLastDay,
   isSpinLoading,
   onStartDraw,
-  wheelMode,
-  rewardsData,
   currentPrize,
 }: WheelSpinnerProps) {
-  const isRewardsMode = wheelMode === 'rewards'
-  const segments = isRewardsMode ? rewardsData : participants
-  const segmentCount = segments.length
+  const segmentCount = participants.length
   const angle = segmentCount > 0 ? 360 / segmentCount : 45
+  const LABEL_THRESHOLD = 20
+  const showLabels = segmentCount <= LABEL_THRESHOLD
 
   const polarToCartesian = (cx: number, cy: number, r: number, deg: number) => {
     const rad = ((deg - 90) * Math.PI) / 180
@@ -64,12 +53,10 @@ export function WheelSpinner({
       <div className="flex items-center justify-between gap-4">
         <div>
           <p className="text-sm uppercase tracking-[0.35em] text-gold">
-            {isRewardsMode ? 'Votación de Premios' : 'Sorteo Mensual de Clientes'}
+            Sorteo Mensual de Clientes
           </p>
           <h2 className="mt-3 text-2xl font-semibold text-[var(--text-primary)]">
-            {isRewardsMode
-              ? 'Así van las votaciones este mes'
-              : 'La ruleta gira con los nombres de nuestros clientes'}
+            La ruleta gira con los nombres de nuestros clientes
           </h2>
         </div>
       </div>
@@ -91,79 +78,31 @@ export function WheelSpinner({
                 animation: isSpinning ? 'wheel-spin 5s cubic-bezier(.17,.67,.83,.67) forwards' : 'none',
               }}
             >
-              {segments.map((seg, index) => {
-                const label = isRewardsMode
-                  ? (seg as RewardSegment).name
-                  : (seg as string)
-                const pct = isRewardsMode ? (seg as RewardSegment).pct : undefined
-
-                return (
-                  <g key={isRewardsMode ? (seg as RewardSegment).id : (seg as string)}>
-                    <path
-                      d={describeArc(index)}
-                      fill={wheelColors[index % wheelColors.length]}
-                      stroke="var(--text-primary)"
-                      strokeWidth="2"
-                    />
-                    {isRewardsMode && pct !== undefined ? (
-                      <>
-                        <text
-                          x={(() => {
-                            const midAngle = (index + 0.5) * angle
-                            const mid = polarToCartesian(200, 200, 110, midAngle)
-                            return mid.x
-                          })()}
-                          y={(() => {
-                            const midAngle = (index + 0.5) * angle
-                            const mid = polarToCartesian(200, 200, 110, midAngle)
-                            return mid.y
-                          })()}
-                          textAnchor="middle"
-                          dominantBaseline="central"
-                          fill="var(--text-primary)"
-                          fontSize="12"
-                          fontWeight="700"
-                        >
-                          {label.length > 12 ? label.slice(0, 10) + '…' : label}
-                        </text>
-                        <text
-                          x={(() => {
-                            const midAngle = (index + 0.5) * angle
-                            const mid = polarToCartesian(200, 200, 150, midAngle)
-                            return mid.x
-                          })()}
-                          y={(() => {
-                            const midAngle = (index + 0.5) * angle
-                            const mid = polarToCartesian(200, 200, 150, midAngle)
-                            return mid.y
-                          })()}
-                          textAnchor="middle"
-                          dominantBaseline="central"
-                          fill="var(--text-primary)"
-                          fontSize="16"
-                          fontWeight="900"
-                        >
-                          {pct}%
-                        </text>
-                      </>
-                    ) : (
-                      <text
-                        x={200}
-                        y={62 + (index * 45 > 180 ? 0 : 0)}
-                        textAnchor="middle"
+              {participants.map((seg, index) => (
+                <g key={seg}>
+                  <path
+                    d={describeArc(index)}
+                    fill={wheelColors[index % wheelColors.length]}
+                    stroke="var(--text-primary)"
+                    strokeWidth={segmentCount > 40 ? '0.5' : '2'}
+                  />
+                  {showLabels ? (
+                    <text
+                      x={200}
+                      y={62 + (index * 45 > 180 ? 0 : 0)}
+                      textAnchor="middle"
                       fill="var(--text-primary)"
                       fontSize={segmentCount <= 6 ? 18 : 14}
-                        fontWeight="700"
-                        transform={`rotate(${(index + 0.5) * angle} 200 200)`}
-                      >
-                        {(seg as string).length > 8
-                          ? (seg as string).slice(0, 7) + '…'
-                          : seg as string}
-                      </text>
-                    )}
-                  </g>
-                )
-              })}
+                      fontWeight="700"
+                      transform={`rotate(${(index + 0.5) * angle} 200 200)`}
+                    >
+                      {seg.length > 8
+                        ? seg.slice(0, 7) + '…'
+                        : seg}
+                    </text>
+                  ) : null}
+                </g>
+              ))}
               <circle cx="200" cy="200" r="52" fill="var(--bg-primary)" />
               <circle cx="200" cy="200" r="42" fill="var(--gold)" />
             </svg>
@@ -176,13 +115,6 @@ export function WheelSpinner({
       </div>
 
       <div className="mt-8 flex flex-col items-center gap-4 text-center">
-        {currentPrize && isRewardsMode && (
-          <div className="mb-2 flex items-center gap-2 rounded-full bg-gold/10 px-4 py-2 text-sm text-gold">
-            <Gift size={16} />
-            <span>Premio del mes: <strong>{currentPrize}</strong></span>
-          </div>
-        )}
-
         {(raffleStatus === 'active' || raffleStatus === 'completed') && raffleWinner && (
           <div className="mb-6 flex justify-center">
             <div className="winner-fade rounded-[28px] border border-gold/30 bg-[var(--bg-card)] px-6 py-5 shadow-[0_0_40px_rgba(245,166,35,0.18)]">
@@ -201,13 +133,7 @@ export function WheelSpinner({
           </div>
         )}
 
-        {isRewardsMode && raffleStatus === 'voting' && (
-          <div className="w-full rounded-full bg-[var(--bg-tertiary)] px-6 py-3 text-sm text-[var(--text-secondary)]">
-            Votación en curso — los resultados se actualizan en vivo
-          </div>
-        )}
-
-        {!isRewardsMode && isAdmin && isLastDay && raffleStatus !== 'completed' ? (
+        {isAdmin && isLastDay && raffleStatus !== 'completed' ? (
           <button
             onClick={onStartDraw}
             className="w-full rounded-full bg-gold px-6 py-3 text-base font-bold text-surface-dark transition-all duration-300 hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-70"
@@ -215,7 +141,7 @@ export function WheelSpinner({
           >
             {isSpinning ? 'Girando Ruleta...' : 'Iniciar Sorteo'}
           </button>
-        ) : !isRewardsMode && raffleStatus === 'completed' ? (
+        ) : raffleStatus === 'completed' ? (
           <button
             type="button"
             className="w-full cursor-default rounded-full bg-gold px-6 py-3 text-base font-bold text-surface-dark"
@@ -223,7 +149,7 @@ export function WheelSpinner({
           >
             Ver Ganador
           </button>
-        ) : !isRewardsMode ? (
+        ) : (
           <button
             type="button"
             className="w-full cursor-default rounded-full bg-[var(--bg-tertiary)] px-6 py-3 text-base font-bold text-[var(--text-secondary)]"
@@ -231,13 +157,11 @@ export function WheelSpinner({
           >
             Ruleta cerrada
           </button>
-        ) : null}
-
-        {!isRewardsMode && (
-          <p className="max-w-sm text-sm text-[var(--text-secondary)]">
-            Presiona el botón y mira cómo la ruleta decide al ganador del mes.
-          </p>
         )}
+
+        <p className="max-w-sm text-sm text-[var(--text-secondary)]">
+          Presiona el botón y mira cómo la ruleta decide al ganador del mes.
+        </p>
 
         {winner && (
           <div className="winner-fade rounded-[28px] border border-gold/30 bg-[var(--bg-card)] px-5 py-4 text-[var(--text-primary)] shadow-[0_0_40px_rgba(245,166,35,0.18)]">

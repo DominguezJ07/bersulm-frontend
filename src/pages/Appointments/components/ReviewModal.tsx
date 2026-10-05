@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { X, Star } from 'lucide-react'
-import { reviewsService } from '@/services/reviews.service'
+import { useCreateReview } from '@/hooks/useReviews'
 import toast from 'react-hot-toast'
 import type { Appointment } from '@/types'
 
@@ -18,7 +18,8 @@ export function ReviewModal({
   const [rating, setRating] = useState(0)
   const [hovered, setHovered] = useState(0)
   const [comment, setComment] = useState('')
-  const [isSubmitting, setIsSubmitting] = useState(false)
+
+  const { createReview, isSubmitting } = useCreateReview()
 
   const handleSubmit = async () => {
     if (rating === 0) {
@@ -30,9 +31,8 @@ export function ReviewModal({
       return
     }
 
-    setIsSubmitting(true)
     try {
-      await reviewsService.create({
+      await createReview({
         appointmentId: appointment._id,
         rating,
         comment: comment.trim(),
@@ -48,8 +48,6 @@ export function ReviewModal({
           ?.response?.data?.message
         || 'Error al enviar la reseña'
       toast.error(msg)
-    } finally {
-      setIsSubmitting(false)
     }
   }
 

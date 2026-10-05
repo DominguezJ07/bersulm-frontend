@@ -4,7 +4,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useAuth } from '@/hooks/useAuth'
-import { authService } from '@/services/auth.service'
+import { useAuthProfile } from '@/hooks/useAuthProfile'
 import { Button, Card } from '@/components/ui'
 import toast from 'react-hot-toast'
 import { Camera, X, Eye, EyeOff } from 'lucide-react'
@@ -84,8 +84,9 @@ interface AppointmentItem {
 }
 
 export default function Settings() {
-  const { user, token, logout, updateUser } = useAuth()
+  const { user, token, logout } = useAuth()
   const navigate = useNavigate()
+  const authProfile = useAuthProfile()
 
   const [themeMode, setThemeMode] = useState(
     () => localStorage.getItem(THEME_KEY) || 'dark'
@@ -105,7 +106,6 @@ export default function Settings() {
   const [showEditProfile, setShowEditProfile] = useState(false)
   const [showChangePassword, setShowChangePassword] = useState(false)
 
-  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false)
   const [avatarPreview, setAvatarPreview] = useState<string | null>(
     user?.avatar || null
   )
@@ -232,19 +232,13 @@ export default function Settings() {
     }
     reader.readAsDataURL(file)
 
-    setIsUploadingAvatar(true)
     try {
-      const response = await authService.updateAvatar(file)
-      const updatedUser = response.data
-      if (updatedUser) {
-        updateUser(updatedUser)
-        toast.success('Foto de perfil actualizada')
-      }
+      await authProfile.updateAvatar(file)
+      toast.success('Foto de perfil actualizada')
     } catch {
       toast.error('Error al subir la imagen')
       setAvatarPreview(user?.avatar || null)
     } finally {
-      setIsUploadingAvatar(false)
       if (avatarInputRef.current) {
         avatarInputRef.current.value = ''
       }
@@ -253,9 +247,7 @@ export default function Settings() {
 
   const handleProfileSubmit = async (data: ProfileFormData) => {
     try {
-      const response = await authService.updateProfile(data)
-      const updatedUser = response.data
-      if (updatedUser) updateUser(updatedUser)
+      await authProfile.updateProfile(data)
       toast.success('Perfil actualizado correctamente')
       setShowEditProfile(false)
     } catch (err: unknown) {
@@ -269,7 +261,7 @@ export default function Settings() {
 
   const handlePasswordSubmit = async (data: PasswordFormData) => {
     try {
-      await authService.changePassword({
+      await authProfile.changePassword({
         currentPassword: data.currentPassword,
         newPassword: data.newPassword,
       })
@@ -357,10 +349,10 @@ export default function Settings() {
                 </button>
                 <button
                   type="submit"
-                  disabled={profileForm.formState.isSubmitting}
+                  disabled={authProfile.isUpdatingProfile}
                   className="flex-1 rounded-xl bg-gold py-3 text-sm font-semibold text-surface-dark transition hover:brightness-110 disabled:opacity-60"
                 >
-                  {profileForm.formState.isSubmitting
+                  {authProfile.isUpdatingProfile
                     ? 'Guardando...'
                     : 'Guardar cambios'}
                 </button>
@@ -489,10 +481,10 @@ export default function Settings() {
                 </button>
                 <button
                   type="submit"
-                  disabled={passwordForm.formState.isSubmitting}
+                  disabled={authProfile.isChangingPassword}
                   className="flex-1 rounded-xl bg-gold py-3 text-sm font-semibold text-surface-dark transition hover:brightness-110 disabled:opacity-60"
                 >
-                  {passwordForm.formState.isSubmitting
+                  {authProfile.isChangingPassword
                     ? 'Cambiando...'
                     : 'Cambiar contraseña'}
                 </button>
@@ -502,7 +494,7 @@ export default function Settings() {
         </div>
       )}
 
-      <div className="mx-auto flex max-w-6xl flex-col gap-10">
+      <div className="mx-auto flex max-w-[var(--container-max)] flex-col gap-10">
 
         <header className="text-center">
           <p className="text-sm uppercase tracking-[0.35em] text-gold">Ajustes de cuenta</p>
@@ -537,11 +529,11 @@ export default function Settings() {
 
                 <button
                   onClick={() => avatarInputRef.current?.click()}
-                  disabled={isUploadingAvatar}
+                  disabled={authProfile.isUpdatingAvatar}
                   className="absolute -bottom-1 -right-1 flex h-9 w-9 items-center justify-center rounded-full border-2 border-[var(--bg-primary)] bg-gold text-surface-dark transition hover:brightness-110 disabled:opacity-60"
                   title="Cambiar foto de perfil"
                 >
-                  {isUploadingAvatar ? (
+                  {authProfile.isUpdatingAvatar ? (
                     <span className="h-4 w-4 animate-spin rounded-full border-2 border-t-surface-dark border-surface-dark/30" />
                   ) : (
                     <Camera size={16} />
